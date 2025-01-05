@@ -27,6 +27,8 @@ export const useUserStore = defineStore('user', () => {
       const { name: userName, role: userRole } = res.data
       name.value = userName
       role.value = userRole
+      localStorage.setItem('username', userName)
+      localStorage.setItem('userRole', userRole)
       return true
     } catch (error) {
       console.error('获取用户信息失败:', error)

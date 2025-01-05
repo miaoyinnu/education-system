@@ -47,7 +47,6 @@
         <span class="dialog-footer">
           <el-button @click="gradeDialogVisible = false">取消</el-button>
           <el-button type="primary" @click="saveGrades">保存</el-button>
-          <el-button type="success" @click="publishGrades">发布</el-button>
         </span>
       </template>
     </el-dialog>
@@ -94,17 +93,6 @@ const saveGrades = async () => {
   } catch (error) {
     console.error('保存成绩失败:', error)
     ElMessage.error('保存成绩失败')
-  }
-}
-
-const publishGrades = async () => {
-  try {
-    await request.post(`/api/teacher/course/${currentCourse.value.id}/grades/publish`)
-    ElMessage.success('发布成功')
-    gradeDialogVisible.value = false
-  } catch (error) {
-    console.error('发布成绩失败:', error)
-    ElMessage.error('发布成绩失败')
   }
 }
 

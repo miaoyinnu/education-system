@@ -3,11 +3,15 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.education.mapper.GradeMapper">
     <select id="findByStudentId" resultMap="gradeResultMap">
-        SELECT g.*, c.name as course_name, c.semester,
-               t.name as teacher_name, c.credit
+        SELECT 
+            g.id, g.student_id, g.course_id, g.score, g.created_at,
+            c.name as course_name, c.semester, c.credit,
+            c.teacher_id, c.classroom_id, cr.name as classroom_name,
+            t.name as teacher_name
         FROM grade g
         JOIN course c ON g.course_id = c.id
         JOIN teacher t ON c.teacher_id = t.id
+        LEFT JOIN classroom cr ON c.classroom_id = cr.id
         WHERE g.student_id = #{studentId}
         <if test="semester != null and semester != ''">
             AND c.semester = #{semester}
@@ -25,9 +29,8 @@
             <result property="name" column="course_name"/>
             <result property="semester" column="semester"/>
             <result property="credit" column="credit"/>
-            <association property="teacher" javaType="com.education.entity.Teacher">
-                <result property="name" column="teacher_name"/>
-            </association>
+            <result property="teacherId" column="teacher_id"/>
+            <result property="classroomName" column="classroom_name"/>
         </association>
     </resultMap>
 

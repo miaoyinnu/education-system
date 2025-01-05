@@ -16,7 +16,12 @@
     </select>
     
     <select id="findAvailableCourses" resultMap="courseResultMap">
-        SELECT c.*, t.name as teacher_name, cr.name as classroom_name
+        SELECT 
+            c.id, c.name, c.course_time, c.semester,
+            c.max_students, c.current_students,
+            c.teacher_id, c.classroom_id, c.credit,
+            t.name as teacher_name,
+            cr.name as classroom_name
         FROM course c
         JOIN teacher t ON c.teacher_id = t.id
         JOIN classroom cr ON c.classroom_id = cr.id
@@ -35,12 +40,10 @@
         <result property="semester" column="semester"/>
         <result property="maxStudents" column="max_students"/>
         <result property="currentStudents" column="current_students"/>
-        <association property="teacher" javaType="com.education.entity.Teacher">
-            <result property="name" column="teacher_name"/>
-        </association>
-        <association property="classroom" javaType="com.education.entity.Classroom">
-            <result property="name" column="classroom_name"/>
-        </association>
+        <result property="teacherId" column="teacher_id"/>
+        <result property="classroomId" column="classroom_id"/>
+        <result property="classroomName" column="classroom_name"/>
+        <result property="credit" column="credit"/>
     </resultMap>
     
     <select id="findAll" resultMap="courseResultMap">

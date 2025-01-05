@@ -13,18 +13,54 @@
         active-text-color="#409EFF"
         :router="true"
       >
-        <el-menu-item index="/teacher/dashboard">
-          <el-icon><Menu /></el-icon>
-          <span>首页</span>
-        </el-menu-item>
-        <el-menu-item index="/teacher/timetable">
-          <el-icon><Calendar /></el-icon>
-          <span>课表管理</span>
-        </el-menu-item>
-        <el-menu-item index="/teacher/courses">
-          <el-icon><List /></el-icon>
-          <span>课程管理</span>
-        </el-menu-item>
+        <template v-if="userRole === 'TEACHER'">
+          <el-menu-item index="/teacher/dashboard">
+            <el-icon><Menu /></el-icon>
+            <span>首页</span>
+          </el-menu-item>
+          <el-menu-item index="/teacher/timetable">
+            <el-icon><Calendar /></el-icon>
+            <span>课表管理</span>
+          </el-menu-item>
+          <el-menu-item index="/teacher/courses">
+            <el-icon><List /></el-icon>
+            <span>课程管理</span>
+          </el-menu-item>
+        </template>
+
+        <template v-else-if="userRole === 'STUDENT'">
+          <el-menu-item index="/student/dashboard">
+            <el-icon><Menu /></el-icon>
+            <span>首页</span>
+          </el-menu-item>
+          <el-menu-item index="/student/courses">
+            <el-icon><List /></el-icon>
+            <span>选课</span>
+          </el-menu-item>
+          <el-menu-item index="/student/grades">
+            <el-icon><Document /></el-icon>
+            <span>成绩查询</span>
+          </el-menu-item>
+        </template>
+
+        <template v-else-if="userRole === 'ADMIN'">
+          <el-menu-item index="/admin/dashboard">
+            <el-icon><Menu /></el-icon>
+            <span>首页</span>
+          </el-menu-item>
+          <el-menu-item index="/admin/courses">
+            <el-icon><List /></el-icon>
+            <span>课程管理</span>
+          </el-menu-item>
+          <el-menu-item index="/admin/teachers">
+            <el-icon><User /></el-icon>
+            <span>教师管理</span>
+          </el-menu-item>
+          <el-menu-item index="/admin/classrooms">
+            <el-icon><School /></el-icon>
+            <span>教室管理</span>
+          </el-menu-item>
+        </template>
       </el-menu>
     </div>
 
@@ -59,21 +95,22 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Menu, List, Calendar, UserFilled, CaretBottom } from '@element-plus/icons-vue'
+import { Menu, List, Calendar, UserFilled, CaretBottom, Document, School, User } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { removeToken } from '@/utils/auth'
+import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
-const username = ref(localStorage.getItem('username'))
+const username = computed(() => userStore.name || localStorage.getItem('username'))
+const userRole = computed(() => userStore.role || localStorage.getItem('userRole'))
 const activeMenu = computed(() => route.path)
 
 const handleCommand = (command) => {
   if (command === 'logout') {
-    removeToken()
-    localStorage.removeItem('userRole')
-    localStorage.removeItem('username')
+    userStore.logout()
     router.push('/login')
     ElMessage.success('退出成功')
   }

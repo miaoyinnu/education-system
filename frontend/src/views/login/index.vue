@@ -43,10 +43,10 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { User, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import request from '@/utils/request'
-import { setToken } from '@/utils/auth'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 const loginFormRef = ref(null)
 const loading = ref(false)
 const loginForm = reactive({
@@ -66,15 +66,22 @@ const handleLogin = async () => {
     await loginFormRef.value.validate()
     loading.value = true
     
-    const res = await request.post('/api/auth/login', loginForm)
-    setToken(res.data.token)
-    localStorage.setItem('userRole', res.data.role)
-    localStorage.setItem('username', res.data.username)
+    // 使用 store 的 login 方法
+    const success = await userStore.login(loginForm.username, loginForm.password)
+    if (!success) {
+      throw new Error('登录失败')
+    }
+
+    // 获取用户信息
+    const infoSuccess = await userStore.getInfo()
+    if (!infoSuccess) {
+      throw new Error('获取用户信息失败')
+    }
     
     ElMessage.success('登录成功')
     
     // 根据角色跳转到不同的首页
-    switch (res.data.role) {
+    switch (userStore.role) {
       case 'STUDENT':
         router.push('/student/dashboard')
         break
@@ -89,7 +96,7 @@ const handleLogin = async () => {
     }
   } catch (error) {
     console.error('登录失败:', error)
-    ElMessage.error(error.response?.data?.message || '登录失败')
+    ElMessage.error(error.message || '登录失败')
   } finally {
     loading.value = false
   }

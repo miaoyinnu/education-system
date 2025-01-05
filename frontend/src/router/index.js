@@ -105,15 +105,43 @@ router.beforeEach((to, from, next) => {
   }
 
   // 检查角色权限
-  if (to.meta.role && to.meta.role !== userRole) {
-    ElMessage.warning('无权访问')
-    next('/')
-    return
+  if (to.meta.role && userRole) {
+    if (to.meta.role !== userRole) {
+      ElMessage.warning('无权访问该页面')
+      // 根据用户角色重定向到对应的首页
+      switch (userRole) {
+        case 'STUDENT':
+          next('/student/dashboard')
+          break
+        case 'TEACHER':
+          next('/teacher/dashboard')
+          break
+        case 'ADMIN':
+          next('/admin/dashboard')
+          break
+        default:
+          next('/login')
+      }
+      return
+    }
   }
 
   // 已登录用户访问登录页面
   if (to.path === '/login' && token) {
-    next('/')
+    // 根据用户角色重定向到对应的首页
+    switch (userRole) {
+      case 'STUDENT':
+        next('/student/dashboard')
+        break
+      case 'TEACHER':
+        next('/teacher/dashboard')
+        break
+      case 'ADMIN':
+        next('/admin/dashboard')
+        break
+      default:
+        next('/')
+    }
     return
   }
 

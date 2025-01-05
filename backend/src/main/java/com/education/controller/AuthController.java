@@ -2,6 +2,7 @@ package com.education.controller;
 
 import com.education.dto.LoginRequest;
 import com.education.dto.LoginResponse;
+import com.education.dto.UserInfoResponse;
 import com.education.service.AuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,17 @@ public class AuthController {
             
         } catch (Exception e) {
             logger.error("Login failed for user: " + request.getUsername(), e);
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/info")
+    public ResponseEntity<?> getUserInfo() {
+        try {
+            UserInfoResponse userInfo = authService.getUserInfo();
+            return ResponseEntity.ok(userInfo);
+        } catch (Exception e) {
+            logger.error("Failed to get user info", e);
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }

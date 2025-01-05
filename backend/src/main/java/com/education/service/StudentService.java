@@ -42,13 +42,11 @@ public class StudentService {
         }
         
         List<Grade> grades = gradeMapper.findByStudentId(studentId, semester);
-        
         return grades.stream().map(grade -> {
             GradeDTO dto = new GradeDTO();
             dto.setId(grade.getId());
             dto.setCourseName(grade.getCourse().getName());
-            dto.setTeacherName(grade.getCourse().getTeacherId() != null ? 
-                teacherMapper.findNameById(grade.getCourse().getTeacherId()) : null);
+            dto.setTeacherName(teacherMapper.findNameById(grade.getCourse().getTeacherId()));
             dto.setScore(grade.getScore());
             dto.setSemester(grade.getCourse().getSemester());
             Double credit = grade.getCourse().getCredit();
@@ -88,8 +86,7 @@ public class StudentService {
             CourseDTO dto = new CourseDTO();
             dto.setId(course.getId());
             dto.setName(course.getName());
-            dto.setTeacher(course.getTeacherId() != null ? 
-                teacherMapper.findNameById(course.getTeacherId()) : null);
+            dto.setTeacher(teacherMapper.findNameById(course.getTeacherId()));
             dto.setTime(course.getCourseTime());
             dto.setLocation(course.getClassroomName());
             dto.setSemester(course.getSemester());
