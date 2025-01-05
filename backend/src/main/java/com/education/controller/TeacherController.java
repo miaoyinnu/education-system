@@ -22,6 +22,16 @@ public class TeacherController {
     @Autowired
     private TeacherService teacherService;
 
+    @GetMapping("/semesters")
+    public ResponseEntity<List<String>> getSemesters() {
+        return ResponseEntity.ok(teacherService.getSemesters());
+    }
+
+    @GetMapping("/timetable")
+    public ResponseEntity<List<Course>> getTimetable(@RequestParam(required = false) String semester) {
+        return ResponseEntity.ok(teacherService.getTeacherCourses(semester));
+    }
+
     @GetMapping("/stats")
     public ResponseEntity<TeacherStatsVO> getStats() {
         return ResponseEntity.ok(teacherService.getTeacherStats());

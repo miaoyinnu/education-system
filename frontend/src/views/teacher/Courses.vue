@@ -35,12 +35,26 @@
         <el-table-column prop="studentId" label="学号" width="120" />
         <el-table-column prop="studentName" label="姓名" width="120" />
         <el-table-column prop="className" label="班级" width="120" />
-        <el-table-column label="成绩" width="120">
+        <el-table-column label="成绩" width="150">
           <template #default="{ row }">
-            <el-input-number v-model="row.score" :min="0" :max="100" :precision="1" />
+            <el-input-number 
+              v-model="row.score" 
+              :min="0" 
+              :max="100" 
+              :precision="1"
+              :step="0.5"
+              :controls="false"
+              style="width: 120px"
+              placeholder="请输入成绩"
+              @change="(value) => handleScoreChange(row, value)"
+            />
           </template>
         </el-table-column>
-        <el-table-column prop="updateTime" label="更新时间" width="180" />
+        <el-table-column label="更新时间" width="180">
+          <template #default="{ row }">
+            {{ formatDate(row.updateTime) }}
+          </template>
+        </el-table-column>
       </el-table>
 
       <template #footer>
@@ -63,6 +77,28 @@ const students = ref([])
 const gradeDialogVisible = ref(false)
 const currentCourse = ref(null)
 
+// 格式化日期
+const formatDate = (date) => {
+  if (!date) return ''
+  const d = new Date(date)
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  const hour = String(d.getHours()).padStart(2, '0')
+  const minute = String(d.getMinutes()).padStart(2, '0')
+  return `${year}-${month}-${day} ${hour}:${minute}`
+}
+
+// 处理成绩变化
+const handleScoreChange = (row, value) => {
+  if (value === null || value === undefined) {
+    row.score = null
+    return
+  }
+  // 确保成绩在0-100之间，保留一位小数
+  row.score = Math.min(100, Math.max(0, Math.round(value * 10) / 10))
+}
+
 const fetchCourses = async () => {
   try {
     const res = await request.get('/api/teacher/courses')
@@ -77,7 +113,11 @@ const handleGrades = async (course) => {
   currentCourse.value = course
   try {
     const res = await request.get(`/api/teacher/course/${course.id}/grades`)
-    students.value = res.data
+    // 确保所有学生的成绩都是数字或null
+    students.value = res.data.map(student => ({
+      ...student,
+      score: student.score != null ? Number(student.score) : null
+    }))
     gradeDialogVisible.value = true
   } catch (error) {
     console.error('获取成绩列表失败:', error)
@@ -87,9 +127,17 @@ const handleGrades = async (course) => {
 
 const saveGrades = async () => {
   try {
-    await request.post(`/api/teacher/course/${currentCourse.value.id}/grades`, students.value)
+    // 过滤掉无效的成绩
+    const validGrades = students.value.filter(student => 
+      student.score !== null && !isNaN(student.score)
+    )
+    await request.post(`/api/teacher/course/${currentCourse.value.id}/grades`, validGrades)
     ElMessage.success('保存成功')
     gradeDialogVisible.value = false
+    // 重新加载成绩列表
+    if (currentCourse.value) {
+      handleGrades(currentCourse.value)
+    }
   } catch (error) {
     console.error('保存成绩失败:', error)
     ElMessage.error('保存成绩失败')

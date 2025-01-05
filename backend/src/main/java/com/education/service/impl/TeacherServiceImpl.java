@@ -1,5 +1,6 @@
 package com.education.service.impl;
 
+import com.education.mapper.CourseMapper;
 import com.education.mapper.GradeMapper;
 import com.education.mapper.TeacherMapper;
 import com.education.entity.Course;
@@ -31,11 +32,27 @@ public class TeacherServiceImpl implements TeacherService {
     @Autowired
     private GradeMapper gradeMapper;
 
+    @Autowired
+    private CourseMapper courseMapper;
+
+    @Override
+    public List<String> getSemesters() {
+        Long teacherId = UserContext.getCurrentUserId();
+        return jdbcTemplate.queryForList(
+            "SELECT DISTINCT semester FROM course c " +
+            "JOIN teacher t ON c.teacher_id = t.id " +
+            "WHERE t.user_id = ? " +
+            "ORDER BY semester DESC",
+            String.class,
+            teacherId
+        );
+    }
+
     @Override
     public TeacherStatsVO getTeacherStats() {
         Long userId = UserContext.getCurrentUserId();
         TeacherStatsVO stats = new TeacherStatsVO();
-
+        
         // 获取课程总数
         Integer totalCourses = jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM course c " +
@@ -44,57 +61,79 @@ public class TeacherServiceImpl implements TeacherService {
             Integer.class,
             userId
         );
-        stats.setTotalCourses(totalCourses);
-
+        stats.setTotalCourses(totalCourses != null ? totalCourses : 0);
+        
         // 获取学生总数
         Integer totalStudents = jdbcTemplate.queryForObject(
-            "SELECT COUNT(DISTINCT s.id) FROM student s " +
-            "JOIN course_selection cs ON s.id = cs.student_id " +
-            "JOIN course c ON cs.course_id = c.id " +
+            "SELECT COUNT(DISTINCT cs.student_id) FROM course c " +
             "JOIN teacher t ON c.teacher_id = t.id " +
+            "JOIN course_selection cs ON c.id = cs.course_id " +
             "WHERE t.user_id = ?",
             Integer.class,
             userId
         );
-        stats.setTotalStudents(totalStudents);
-
+        stats.setTotalStudents(totalStudents != null ? totalStudents : 0);
+        
         // 获取平均分数
         Double averageScore = jdbcTemplate.queryForObject(
-            "SELECT AVG(g.score) FROM grade g " +
-            "JOIN course c ON g.course_id = c.id " +
+            "SELECT AVG(g.score) FROM course c " +
             "JOIN teacher t ON c.teacher_id = t.id " +
-            "WHERE t.user_id = ? AND g.score IS NOT NULL",
+            "JOIN grade g ON c.id = g.course_id " +
+            "WHERE t.user_id = ?",
             Double.class,
             userId
         );
         stats.setAverageScore(averageScore != null ? averageScore : 0.0);
-
+        
         return stats;
     }
 
     @Override
-    public List<Course> getTeacherCourses() {
+    public List<Course> getTeacherCourses(String semester) {
         Long userId = UserContext.getCurrentUserId();
-        return jdbcTemplate.query(
+        StringBuilder sql = new StringBuilder(
             "SELECT c.id, c.name, c.semester, c.course_time as courseTime, " +
             "cl.name as classroomName, c.max_students, c.current_students " +
             "FROM course c " +
             "JOIN teacher t ON c.teacher_id = t.id " +
             "LEFT JOIN classroom cl ON c.classroom_id = cl.id " +
-            "WHERE t.user_id = ?",
-            (rs, rowNum) -> {
-                Course course = new Course();
-                course.setId(rs.getLong("id"));
-                course.setName(rs.getString("name"));
-                course.setSemester(rs.getString("semester"));
-                course.setCourseTime(rs.getString("courseTime"));
-                course.setClassroomName(rs.getString("classroomName"));
-                course.setCurrentStudents(rs.getInt("current_students"));
-                course.setMaxStudents(rs.getInt("max_students"));
-                return course;
-            },
-            userId
+            "WHERE t.user_id = ?"
         );
+        
+        if (semester != null && !semester.trim().isEmpty()) {
+            sql.append(" AND c.semester = ?");
+            return jdbcTemplate.query(
+                sql.toString(),
+                (rs, rowNum) -> {
+                    Course course = new Course();
+                    course.setId(rs.getLong("id"));
+                    course.setName(rs.getString("name"));
+                    course.setSemester(rs.getString("semester"));
+                    course.setCourseTime(rs.getString("courseTime"));
+                    course.setClassroomName(rs.getString("classroomName"));
+                    course.setCurrentStudents(rs.getInt("current_students"));
+                    course.setMaxStudents(rs.getInt("max_students"));
+                    return course;
+                },
+                userId, semester
+            );
+        } else {
+            return jdbcTemplate.query(
+                sql.toString(),
+                (rs, rowNum) -> {
+                    Course course = new Course();
+                    course.setId(rs.getLong("id"));
+                    course.setName(rs.getString("name"));
+                    course.setSemester(rs.getString("semester"));
+                    course.setCourseTime(rs.getString("courseTime"));
+                    course.setClassroomName(rs.getString("classroomName"));
+                    course.setCurrentStudents(rs.getInt("current_students"));
+                    course.setMaxStudents(rs.getInt("max_students"));
+                    return course;
+                },
+                userId
+            );
+        }
     }
 
     @Override

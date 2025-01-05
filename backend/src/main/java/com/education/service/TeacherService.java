@@ -11,9 +11,11 @@ import java.util.Map;
 
 public interface TeacherService {
     
+    List<String> getSemesters();
+    
     TeacherStatsVO getTeacherStats();
     
-    List<Course> getTeacherCourses();
+    List<Course> getTeacherCourses(String semester);
     
     List<Map<String, Object>> getCourseStudents(Long courseId);
     
