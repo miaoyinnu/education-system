@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.education.mapper.CourseMapper">
+    <select id="findAllSemesters" resultType="string">
+        SELECT DISTINCT semester FROM course ORDER BY semester DESC
+    </select>
+    
+    <select id="findByStudentId" resultMap="courseResultMap">
+        SELECT c.*, t.name as teacher_name, cr.name as classroom_name
+        FROM course c
+        JOIN course_selection cs ON c.id = cs.course_id
+        JOIN teacher t ON c.teacher_id = t.id
+        JOIN classroom cr ON c.classroom_id = cr.id
+        WHERE cs.student_id = #{studentId}
+    </select>
+    
+    <select id="findAvailableCourses" resultMap="courseResultMap">
+        SELECT c.*, t.name as teacher_name, cr.name as classroom_name
+        FROM course c
+        JOIN teacher t ON c.teacher_id = t.id
+        JOIN classroom cr ON c.classroom_id = cr.id
+        WHERE c.id NOT IN (
+            SELECT course_id FROM course_selection WHERE student_id = #{studentId}
+        )
+        <if test="search != null and search != ''">
+            AND (c.name LIKE CONCAT('%', #{search}, '%') OR t.name LIKE CONCAT('%', #{search}, '%'))
+        </if>
+    </select>
+    
+    <resultMap id="courseResultMap" type="com.education.entity.Course">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="courseTime" column="course_time"/>
+        <result property="semester" column="semester"/>
+        <result property="maxStudents" column="max_students"/>
+        <result property="currentStudents" column="current_students"/>
+        <association property="teacher" javaType="com.education.entity.Teacher">
+            <result property="name" column="teacher_name"/>
+        </association>
+        <association property="classroom" javaType="com.education.entity.Classroom">
+            <result property="name" column="classroom_name"/>
+        </association>
+    </resultMap>
+    
+    <select id="findAll" resultMap="courseResultMap">
+        SELECT c.*, t.name as teacher_name, cr.name as classroom_name
+        FROM course c
+        JOIN teacher t ON c.teacher_id = t.id
+        JOIN classroom cr ON c.classroom_id = cr.id
+    </select>
+    
+    <select id="findByTeacherId" resultMap="courseResultMap">
+        SELECT c.*, t.name as teacher_name, cr.name as classroom_name
+        FROM course c
+        JOIN teacher t ON c.teacher_id = t.id
+        JOIN classroom cr ON c.classroom_id = cr.id
+        WHERE c.teacher_id = #{teacherId}
+    </select>
+    
+    <select id="isTeacherOfCourse" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM course
+        WHERE id = #{courseId} AND teacher_id = #{teacherId}
+    </select>
+    
+    <select id="hasStudents" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM course_selection
+        WHERE course_id = #{courseId}
+    </select>
+    
+    <select id="hasTeacherTimeConflict" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM course
+        WHERE teacher_id = #{teacherId}
+        AND semester = #{semester}
+        AND course_time = #{courseTime}
+        AND id != #{id}
+    </select>
+    
+    <select id="findById" resultMap="courseResultMap">
+        SELECT c.*, t.name as teacher_name, cr.name as classroom_name
+        FROM course c
+        JOIN teacher t ON c.teacher_id = t.id
+        JOIN classroom cr ON c.classroom_id = cr.id
+        WHERE c.id = #{id}
+    </select>
+    
+    <update id="incrementCurrentStudents">
+        UPDATE course 
+        SET current_students = COALESCE(current_students, 0) + 1
+        WHERE id = #{courseId}
+    </update>
+    
+    <select id="isStudentSelected" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM course_selection
+        WHERE student_id = #{studentId} AND course_id = #{courseId}
+    </select>
+    
+    <insert id="insertCourseSelection">
+        INSERT INTO course_selection (student_id, course_id)
+        VALUES (#{studentId}, #{courseId})
+    </insert>
+</mapper> 

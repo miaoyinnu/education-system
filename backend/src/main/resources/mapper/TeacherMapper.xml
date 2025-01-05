@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.education.mapper.TeacherMapper">
+    <select id="getTeacherCourses" resultType="com.education.entity.Course">
+        SELECT 
+            c.id, 
+            c.name, 
+            c.semester, 
+            c.course_time as courseTime,
+            cl.name as classroomName,
+            c.max_students as maxStudents,
+            c.current_students as currentStudents,
+            c.credit
+        FROM course c
+        JOIN teacher t ON c.teacher_id = t.id
+        LEFT JOIN classroom cl ON c.classroom_id = cl.id
+        WHERE t.user_id = #{teacherId}
+    </select>
+
+    <select id="findAll" resultType="com.education.dto.TeacherDTO">
+        SELECT 
+            t.id,
+            t.name,
+            t.title,
+            t.user_id as userId,
+            u.username
+        FROM teacher t
+        LEFT JOIN user u ON t.user_id = u.id
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO teacher (name, title, user_id)
+        VALUES (#{name}, #{title}, #{userId})
+    </insert>
+
+    <update id="update">
+        UPDATE teacher
+        SET name = #{name},
+            title = #{title}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM teacher WHERE id = #{id}
+    </delete>
+
+    <select id="hasOngoingCourses" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1 FROM course 
+            WHERE teacher_id = #{id} 
+            AND semester = (
+                SELECT value FROM system_config WHERE key = 'current_semester'
+            )
+        )
+    </select>
+</mapper> 

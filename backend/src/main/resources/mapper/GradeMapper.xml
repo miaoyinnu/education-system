@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.education.mapper.GradeMapper">
+    <select id="findByStudentId" resultMap="gradeResultMap">
+        SELECT g.*, c.name as course_name, c.semester,
+               t.name as teacher_name, c.credit
+        FROM grade g
+        JOIN course c ON g.course_id = c.id
+        JOIN teacher t ON c.teacher_id = t.id
+        WHERE g.student_id = #{studentId}
+        <if test="semester != null and semester != ''">
+            AND c.semester = #{semester}
+        </if>
+        ORDER BY g.created_at DESC
+    </select>
+    
+    <resultMap id="gradeResultMap" type="com.education.entity.Grade">
+        <id property="id" column="id"/>
+        <result property="studentId" column="student_id"/>
+        <result property="courseId" column="course_id"/>
+        <result property="score" column="score"/>
+        <result property="createdAt" column="created_at"/>
+        <association property="course" javaType="com.education.entity.Course">
+            <result property="name" column="course_name"/>
+            <result property="semester" column="semester"/>
+            <result property="credit" column="credit"/>
+            <association property="teacher" javaType="com.education.entity.Teacher">
+                <result property="name" column="teacher_name"/>
+            </association>
+        </association>
+    </resultMap>
+
+    <select id="findStudentsByCourseId" resultType="com.education.dto.StudentGradeDTO">
+        SELECT 
+            s.id as studentId,
+            s.name as studentName,
+            g.course_id as courseId,
+            c.name as courseName,
+            g.score,
+            c.semester
+        FROM student s
+        JOIN course_selection cs ON s.id = cs.student_id
+        JOIN course c ON cs.course_id = c.id
+        LEFT JOIN grade g ON s.id = g.student_id AND c.id = g.course_id
+        WHERE c.id = #{courseId}
+    </select>
+
+    <update id="updateGrade">
+        UPDATE grade 
+        SET score = #{score}
+        WHERE student_id = #{studentId} AND course_id = #{courseId}
+    </update>
+
+    <update id="batchUpdateGrades">
+        <foreach collection="list" item="grade" separator=";">
+            UPDATE grade 
+            SET score = #{grade.score}
+            WHERE student_id = #{grade.studentId} 
+            AND course_id = #{grade.courseId}
+        </foreach>
+    </update>
+
+    <insert id="insert">
+        INSERT INTO grade (student_id, course_id, score)
+        VALUES (#{studentId}, #{courseId}, #{score})
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM grade WHERE id = #{id}
+    </delete>
+
+    <select id="getCourseGrades" resultType="com.education.entity.StudentGrade">
+        SELECT 
+            s.id as studentId,
+            s.name as studentName,
+            s.class_id as className,
+            g.score as score,
+            g.created_at as updateTime
+        FROM student s
+        LEFT JOIN grade g ON s.id = g.student_id AND g.course_id = #{courseId}
+        WHERE s.id IN (
+            SELECT student_id FROM course_selection WHERE course_id = #{courseId}
+        )
+    </select>
+
+    <update id="updateGradeWithExam">
+        INSERT INTO grade (course_id, student_id, score, created_at)
+        VALUES (#{courseId}, #{studentId}, #{score}, #{updateTime})
+        ON DUPLICATE KEY UPDATE
+        score = #{score},
+        created_at = #{updateTime}
+    </update>
+
+    <update id="publishGrades">
+        UPDATE grade SET is_published = 1 WHERE course_id = #{courseId}
+    </update>
+</mapper> 
