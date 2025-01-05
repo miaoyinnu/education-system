@@ -2,5 +2,66 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.education.mapper.ClassroomMapper">
-    <!-- 在这里添加SQL映射 -->
+    <insert id="insert" parameterType="com.education.dto.ClassroomDTO">
+        INSERT INTO classroom (name, capacity, status)
+        VALUES (#{name}, #{capacity}, #{status})
+    </insert>
+    
+    <update id="update" parameterType="com.education.dto.ClassroomDTO">
+        UPDATE classroom
+        SET name = #{name},
+            capacity = #{capacity},
+            status = #{status}
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="delete">
+        DELETE FROM classroom WHERE id = #{id}
+    </delete>
+    
+    <select id="findAll" resultType="com.education.dto.ClassroomDTO">
+        SELECT id, name, capacity, status
+        FROM classroom
+    </select>
+    
+    <select id="countTotal" resultType="int">
+        SELECT COUNT(*) FROM classroom
+    </select>
+
+    <select id="getCurrentUsage" resultType="java.util.Map">
+        SELECT status, COUNT(*) as count 
+        FROM classroom 
+        GROUP BY status
+    </select>
+
+    <select id="getDailyUsageStats" resultType="java.util.Map">
+        SELECT DATE_FORMAT(create_time, '%Y-%m-%d') as date,
+               COUNT(DISTINCT classroom_id) as used_count
+        FROM course_schedule
+        WHERE create_time >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        GROUP BY date
+    </select>
+
+    <select id="getUtilizationRate" resultType="java.lang.Double">
+        SELECT ROUND(COUNT(DISTINCT cs.classroom_id) * 100.0 / COUNT(DISTINCT c.id), 2) as rate
+        FROM classroom c
+        LEFT JOIN course_schedule cs ON c.id = cs.classroom_id
+        WHERE cs.create_time >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+    </select>
+    
+    <select id="getUsageRates" resultType="java.util.Map">
+        SELECT c.name,
+               COUNT(cs.id) * 100.0 / (SELECT COUNT(*) FROM time_slot) as usage_rate
+        FROM classroom c
+        LEFT JOIN course_schedule cs ON c.id = cs.classroom_id
+        GROUP BY c.id, c.name
+    </select>
+    
+    <select id="getCapacityUtilization" resultType="java.util.Map">
+        SELECT c.name,
+               AVG(cs.student_count * 100.0 / c.capacity) as utilization_rate
+        FROM classroom c
+        LEFT JOIN course_schedule cs ON c.id = cs.classroom_id
+        GROUP BY c.id, c.name
+    </select>
 </mapper> 

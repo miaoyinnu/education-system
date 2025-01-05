@@ -1,54 +1,73 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { login, getInfo } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
-import request from '@/utils/request'
 
-export const useUserStore = defineStore('user', () => {
-  const token = ref(getToken())
-  const name = ref('')
-  const role = ref('')
+export const useUserStore = defineStore('user', {
+  state: () => ({
+    token: getToken(),
+    name: '',
+    role: localStorage.getItem('userRole')?.toUpperCase(),
+    info: null
+  }),
 
-  const login = async (username, password) => {
-    try {
-      const res = await request.post('/api/auth/login', { username, password })
-      const { token: newToken } = res.data
-      token.value = newToken
-      setToken(newToken)
-      return true
-    } catch (error) {
-      console.error('登录失败:', error)
-      return false
+  actions: {
+    async login(username, password) {
+      try {
+        const res = await login({ username, password })
+        console.log('Login response:', res)
+        if (res && res.token) {
+          this.token = res.token
+          setToken(res.token)
+          if (res.role) {
+            const role = res.role.toUpperCase()
+            this.role = role
+            localStorage.setItem('userRole', role)
+          }
+          return true
+        }
+        return false
+      } catch (error) {
+        console.error('Login failed:', error)
+        return false
+      }
+    },
+
+    async getInfo() {
+      try {
+        const res = await getInfo()
+        console.log('GetInfo response:', res)
+        if (res) {
+          this.name = res.name
+          const role = res.role.toUpperCase()
+          this.role = role
+          this.info = res
+          localStorage.setItem('userRole', role)
+          return true
+        }
+        return false
+      } catch (error) {
+        console.error('Get user info failed:', error)
+        return false
+      }
+    },
+
+    async logout() {
+      try {
+        this.resetState()
+        return true
+      } catch (error) {
+        console.error('Logout failed:', error)
+        return false
+      }
+    },
+
+    resetState() {
+      this.token = null
+      this.name = ''
+      this.role = ''
+      this.info = null
+      removeToken()
+      localStorage.removeItem('userRole')
     }
-  }
-
-  const getInfo = async () => {
-    try {
-      const res = await request.get('/api/auth/info')
-      const { name: userName, role: userRole } = res.data
-      name.value = userName
-      role.value = userRole
-      localStorage.setItem('username', userName)
-      localStorage.setItem('userRole', userRole)
-      return true
-    } catch (error) {
-      console.error('获取用户信息失败:', error)
-      return false
-    }
-  }
-
-  const logout = () => {
-    token.value = ''
-    name.value = ''
-    role.value = ''
-    removeToken()
-  }
-
-  return {
-    token,
-    name,
-    role,
-    login,
-    getInfo,
-    logout
   }
 }) 

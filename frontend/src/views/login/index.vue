@@ -2,13 +2,13 @@
   <div class="login-container">
     <el-card class="login-card">
       <template #header>
-        <h2 class="login-title">学生选课系统</h2>
+        <h2 class="login-title">教务管理系统</h2>
       </template>
       <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" label-width="0">
         <el-form-item prop="username">
           <el-input
             v-model="loginForm.username"
-            placeholder="用户名"
+            placeholder="请输入用户名"
           >
             <template #prefix>
               <el-icon><User /></el-icon>
@@ -19,7 +19,7 @@
           <el-input
             v-model="loginForm.password"
             type="password"
-            placeholder="密码"
+            placeholder="请输入密码"
             show-password
             @keyup.enter="handleLogin"
           >
@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { User, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
@@ -101,10 +101,6 @@ const handleLogin = async () => {
     loading.value = false
   }
 }
-
-onMounted(() => {
-  console.log('Login page mounted')
-})
 </script>
 
 <style scoped>

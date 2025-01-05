@@ -93,7 +93,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Menu, List, Calendar, UserFilled, CaretBottom, Document, School, User } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
@@ -104,17 +104,33 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 
-const username = computed(() => userStore.name || localStorage.getItem('username'))
-const userRole = computed(() => userStore.role || localStorage.getItem('userRole'))
+const username = computed(() => {
+  if (userStore.name) return userStore.name
+  if (userStore.info?.name) return userStore.info.name
+  return userStore.token ? '加载中...' : '未登录'
+})
+
+const userRole = computed(() => userStore.role)
+
 const activeMenu = computed(() => route.path)
 
-const handleCommand = (command) => {
+const handleCommand = async (command) => {
   if (command === 'logout') {
-    userStore.logout()
+    await userStore.logout()
     router.push('/login')
     ElMessage.success('退出成功')
   }
 }
+
+onMounted(async () => {
+  if (userStore.token && !userStore.name) {
+    try {
+      await userStore.getInfo()
+    } catch (error) {
+      console.error('Failed to get user info:', error)
+    }
+  }
+})
 </script>
 
 <style scoped>

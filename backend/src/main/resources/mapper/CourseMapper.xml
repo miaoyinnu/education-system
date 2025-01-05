@@ -2,10 +2,46 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.education.mapper.CourseMapper">
+    <!-- 基础CRUD -->
+    <select id="findAll" resultMap="courseResultMap">
+        SELECT c.*, t.name as teacher_name, cr.name as classroom_name
+        FROM course c
+        JOIN teacher t ON c.teacher_id = t.id
+        JOIN classroom cr ON c.classroom_id = cr.id
+    </select>
+
+    <select id="findById" resultMap="courseResultMap">
+        SELECT c.*, t.name as teacher_name, cr.name as classroom_name
+        FROM course c
+        JOIN teacher t ON c.teacher_id = t.id
+        JOIN classroom cr ON c.classroom_id = cr.id
+        WHERE c.id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.education.dto.CourseDTO">
+        INSERT INTO course (name, teacher_id, max_students, credit, semester)
+        VALUES (#{name}, #{teacherId}, #{maxStudents}, #{credit}, #{semester})
+    </insert>
+    
+    <update id="update" parameterType="com.education.dto.CourseDTO">
+        UPDATE course
+        SET name = #{name},
+            teacher_id = #{teacherId},
+            max_students = #{maxStudents},
+            credit = #{credit},
+            semester = #{semester}
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="delete">
+        DELETE FROM course WHERE id = #{id}
+    </delete>
+
+    <!-- 学生相关 -->
     <select id="findAllSemesters" resultType="string">
         SELECT DISTINCT semester FROM course ORDER BY semester DESC
     </select>
-    
+
     <select id="findByStudentId" resultMap="courseResultMap">
         SELECT c.*, t.name as teacher_name, cr.name as classroom_name
         FROM course c
@@ -14,7 +50,7 @@
         JOIN classroom cr ON c.classroom_id = cr.id
         WHERE cs.student_id = #{studentId}
     </select>
-    
+
     <select id="findAvailableCourses" resultMap="courseResultMap">
         SELECT 
             c.id, c.name, c.course_time, c.semester,
@@ -32,7 +68,108 @@
             AND (c.name LIKE CONCAT('%', #{search}, '%') OR t.name LIKE CONCAT('%', #{search}, '%'))
         </if>
     </select>
-    
+
+    <select id="isStudentSelected" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM course_selection
+        WHERE student_id = #{studentId} AND course_id = #{courseId}
+    </select>
+
+    <insert id="insertCourseSelection">
+        INSERT INTO course_selection (student_id, course_id)
+        VALUES (#{studentId}, #{courseId})
+    </insert>
+
+    <update id="incrementCurrentStudents">
+        UPDATE course
+        SET current_students = COALESCE(current_students, 0) + 1
+        WHERE id = #{courseId}
+    </update>
+
+    <!-- 教师相关 -->
+    <select id="findByTeacherId" resultMap="courseResultMap">
+        SELECT c.*, t.name as teacher_name, cr.name as classroom_name
+        FROM course c
+        JOIN teacher t ON c.teacher_id = t.id
+        JOIN classroom cr ON c.classroom_id = cr.id
+        WHERE c.teacher_id = #{teacherId}
+    </select>
+
+    <select id="isTeacherOfCourse" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM course
+        WHERE id = #{courseId} AND teacher_id = #{teacherId}
+    </select>
+
+    <!-- 管理员相关 -->
+    <select id="hasStudents" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM course_selection
+        WHERE course_id = #{courseId}
+    </select>
+
+    <select id="hasTeacherTimeConflict" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM course
+        WHERE teacher_id = #{teacherId}
+        AND semester = #{semester}
+        AND course_time = #{courseTime}
+        AND id != #{id}
+    </select>
+
+    <select id="hasClassroomTimeConflict" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM course
+        WHERE classroom_id = #{classroomId}
+        AND semester = #{semester}
+        AND course_time = #{courseTime}
+        AND id != #{id}
+    </select>
+
+    <select id="findUnscheduledCourses" resultMap="courseResultMap">
+        SELECT c.*, t.name as teacher_name
+        FROM course c
+        LEFT JOIN teacher t ON c.teacher_id = t.id
+        WHERE c.classroom_id IS NULL
+        OR c.time_slot_id IS NULL
+    </select>
+
+    <update id="updateSchedule" parameterType="com.education.dto.CourseDTO">
+        UPDATE course
+        SET classroom_id = #{classroomId},
+            time_slot_id = #{timeSlotId}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 统计相关 -->
+    <select id="countTotal" resultType="int">
+        SELECT COUNT(*) FROM course
+    </select>
+
+    <select id="getDailySelectionStats" resultType="java.util.Map">
+        SELECT DATE_FORMAT(cs.created_at, '%Y-%m-%d') as date,
+               COUNT(*) as count
+        FROM course_selection cs
+        WHERE cs.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        GROUP BY DATE_FORMAT(cs.created_at, '%Y-%m-%d')
+    </select>
+
+    <select id="getWeeklySelectionStats" resultType="java.util.Map">
+        SELECT YEARWEEK(cs.created_at) as week,
+               COUNT(*) as count
+        FROM course_selection cs
+        WHERE cs.created_at >= DATE_SUB(CURDATE(), INTERVAL 4 WEEK)
+        GROUP BY YEARWEEK(cs.created_at)
+    </select>
+
+    <select id="getMonthlySelectionStats" resultType="java.util.Map">
+        SELECT DATE_FORMAT(cs.created_at, '%Y-%m') as month,
+               COUNT(*) as count
+        FROM course_selection cs
+        WHERE cs.created_at >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+        GROUP BY DATE_FORMAT(cs.created_at, '%Y-%m')
+    </select>
+
     <resultMap id="courseResultMap" type="com.education.entity.Course">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
@@ -45,65 +182,4 @@
         <result property="classroomName" column="classroom_name"/>
         <result property="credit" column="credit"/>
     </resultMap>
-    
-    <select id="findAll" resultMap="courseResultMap">
-        SELECT c.*, t.name as teacher_name, cr.name as classroom_name
-        FROM course c
-        JOIN teacher t ON c.teacher_id = t.id
-        JOIN classroom cr ON c.classroom_id = cr.id
-    </select>
-    
-    <select id="findByTeacherId" resultMap="courseResultMap">
-        SELECT c.*, t.name as teacher_name, cr.name as classroom_name
-        FROM course c
-        JOIN teacher t ON c.teacher_id = t.id
-        JOIN classroom cr ON c.classroom_id = cr.id
-        WHERE c.teacher_id = #{teacherId}
-    </select>
-    
-    <select id="isTeacherOfCourse" resultType="boolean">
-        SELECT COUNT(*) > 0
-        FROM course
-        WHERE id = #{courseId} AND teacher_id = #{teacherId}
-    </select>
-    
-    <select id="hasStudents" resultType="boolean">
-        SELECT COUNT(*) > 0
-        FROM course_selection
-        WHERE course_id = #{courseId}
-    </select>
-    
-    <select id="hasTeacherTimeConflict" resultType="boolean">
-        SELECT COUNT(*) > 0
-        FROM course
-        WHERE teacher_id = #{teacherId}
-        AND semester = #{semester}
-        AND course_time = #{courseTime}
-        AND id != #{id}
-    </select>
-    
-    <select id="findById" resultMap="courseResultMap">
-        SELECT c.*, t.name as teacher_name, cr.name as classroom_name
-        FROM course c
-        JOIN teacher t ON c.teacher_id = t.id
-        JOIN classroom cr ON c.classroom_id = cr.id
-        WHERE c.id = #{id}
-    </select>
-    
-    <update id="incrementCurrentStudents">
-        UPDATE course 
-        SET current_students = COALESCE(current_students, 0) + 1
-        WHERE id = #{courseId}
-    </update>
-    
-    <select id="isStudentSelected" resultType="boolean">
-        SELECT COUNT(*) > 0
-        FROM course_selection
-        WHERE student_id = #{studentId} AND course_id = #{courseId}
-    </select>
-    
-    <insert id="insertCourseSelection">
-        INSERT INTO course_selection (student_id, course_id)
-        VALUES (#{studentId}, #{courseId})
-    </insert>
 </mapper> 

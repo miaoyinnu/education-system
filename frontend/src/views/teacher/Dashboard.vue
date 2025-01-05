@@ -148,8 +148,13 @@ const handleScoreChange = (row, value) => {
 // 获取统计数据
 const fetchStats = async () => {
   try {
-    const res = await request.get('/api/teacher/stats')
-    stats.value = res.data
+    const res = await request.get('/teacher/stats')
+    console.log('统计数据:', res)
+    stats.value = res || {
+      totalCourses: 0,
+      totalStudents: 0,
+      averageScore: 0
+    }
   } catch (error) {
     console.error('获取统计信息失败:', error)
     ElMessage.error('获取统计信息失败')
@@ -159,8 +164,9 @@ const fetchStats = async () => {
 // 获取课程列表
 const fetchCourses = async () => {
   try {
-    const res = await request.get('/api/teacher/courses')
-    courses.value = res.data
+    const res = await request.get('/teacher/courses')
+    console.log('课程列表:', res)
+    courses.value = Array.isArray(res) ? res : []
   } catch (error) {
     console.error('获取课程列表失败:', error)
     ElMessage.error('获取课程列表失败')
@@ -170,12 +176,13 @@ const fetchCourses = async () => {
 const handleGrades = async (course) => {
   currentCourse.value = course
   try {
-    const res = await request.get(`/api/teacher/course/${course.id}/grades`)
+    const res = await request.get(`/teacher/course/${course.id}/grades`)
+    console.log('成绩列表:', res)
     // 确保所有学生的成绩都是数字或null
-    students.value = res.data.map(student => ({
+    students.value = Array.isArray(res) ? res.map(student => ({
       ...student,
       score: student.score != null ? Number(student.score) : null
-    }))
+    })) : []
     gradeDialogVisible.value = true
   } catch (error) {
     console.error('获取成绩列表失败:', error)
@@ -189,7 +196,7 @@ const saveGrades = async () => {
     const validGrades = students.value.filter(student => 
       student.score !== null && !isNaN(student.score)
     )
-    await request.post(`/api/teacher/course/${currentCourse.value.id}/grades`, validGrades)
+    await request.post(`/teacher/course/${currentCourse.value.id}/grades`, validGrades)
     ElMessage.success('保存成功')
     gradeDialogVisible.value = false
     // 重新加载成绩列表

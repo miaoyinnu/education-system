@@ -7,7 +7,7 @@
         </div>
       </template>
 
-      <el-table :data="courses" stripe>
+      <el-table :data="courses" stripe v-loading="loading">
         <el-table-column prop="name" label="课程名称" />
         <el-table-column prop="semester" label="学期" />
         <el-table-column prop="courseTime" label="上课时间" />
@@ -19,6 +19,9 @@
             <el-button type="primary" size="small" @click="handleGrades(row)">成绩管理</el-button>
           </template>
         </el-table-column>
+        <template #empty>
+          <el-empty description="暂无课程数据" />
+        </template>
       </el-table>
     </el-card>
 
@@ -76,6 +79,7 @@ const courses = ref([])
 const students = ref([])
 const gradeDialogVisible = ref(false)
 const currentCourse = ref(null)
+const loading = ref(false)
 
 // 格式化日期
 const formatDate = (date) => {
@@ -100,24 +104,37 @@ const handleScoreChange = (row, value) => {
 }
 
 const fetchCourses = async () => {
+  loading.value = true
   try {
-    const res = await request.get('/api/teacher/courses')
-    courses.value = res.data
+    const res = await request.get('/teacher/courses')
+    console.log('获取到的课程数据:', res)
+    if (Array.isArray(res)) {
+      courses.value = res
+    } else if (res.data && Array.isArray(res.data)) {
+      courses.value = res.data
+    } else {
+      courses.value = []
+      console.error('课程数据格式不正确:', res)
+    }
+    console.log('courses.value:', courses.value)
   } catch (error) {
     console.error('获取课程列表失败:', error)
     ElMessage.error('获取课程列表失败')
+  } finally {
+    loading.value = false
   }
 }
 
 const handleGrades = async (course) => {
   currentCourse.value = course
   try {
-    const res = await request.get(`/api/teacher/course/${course.id}/grades`)
+    const res = await request.get(`/teacher/course/${course.id}/grades`)
+    console.log('成绩列表:', res)
     // 确保所有学生的成绩都是数字或null
-    students.value = res.data.map(student => ({
+    students.value = Array.isArray(res) ? res.map(student => ({
       ...student,
       score: student.score != null ? Number(student.score) : null
-    }))
+    })) : []
     gradeDialogVisible.value = true
   } catch (error) {
     console.error('获取成绩列表失败:', error)
@@ -131,7 +148,7 @@ const saveGrades = async () => {
     const validGrades = students.value.filter(student => 
       student.score !== null && !isNaN(student.score)
     )
-    await request.post(`/api/teacher/course/${currentCourse.value.id}/grades`, validGrades)
+    await request.post(`/teacher/course/${currentCourse.value.id}/grades`, validGrades)
     ElMessage.success('保存成功')
     gradeDialogVisible.value = false
     // 重新加载成绩列表

@@ -15,7 +15,7 @@
         </div>
       </template>
 
-      <el-table :data="grades" stripe>
+      <el-table :data="grades" stripe v-loading="loading">
         <el-table-column prop="courseName" label="课程名称" />
         <el-table-column prop="teacherName" label="任课教师" />
         <el-table-column prop="semester" label="学期" />
@@ -28,6 +28,10 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <div v-if="grades.length === 0 && !loading" class="empty-text">
+        暂无成绩数据
+      </div>
     </el-card>
   </div>
 </template>
@@ -40,11 +44,13 @@ import { ElMessage } from 'element-plus'
 const currentSemester = ref('')
 const semesters = ref([])
 const grades = ref([])
+const loading = ref(false)
 
 const fetchSemesters = async () => {
   try {
-    const res = await request.get('/api/student/semesters')
-    semesters.value = res.data
+    const res = await request.get('/student/semesters')
+    console.log('学期列表:', res)
+    semesters.value = Array.isArray(res) ? res : []
   } catch (error) {
     console.error('获取学期列表失败:', error)
     ElMessage.error('获取学期列表失败')
@@ -52,14 +58,18 @@ const fetchSemesters = async () => {
 }
 
 const fetchGrades = async (semester = '') => {
+  loading.value = true
   try {
-    const res = await request.get('/api/student/grades', {
+    const res = await request.get('/student/grades', {
       params: { semester }
     })
-    grades.value = res.data
+    console.log('成绩数据:', res)
+    grades.value = Array.isArray(res) ? res : []
   } catch (error) {
     console.error('获取成绩失败:', error)
     ElMessage.error('获取成绩失败')
+  } finally {
+    loading.value = false
   }
 }
 
@@ -86,5 +96,11 @@ onMounted(() => {
 
 .text-danger {
   color: #F56C6C;
+}
+
+.empty-text {
+  text-align: center;
+  color: #909399;
+  padding: 20px 0;
 }
 </style> 

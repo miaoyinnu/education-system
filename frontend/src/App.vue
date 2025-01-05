@@ -1,9 +1,7 @@
 <template>
   <el-config-provider>
     <router-view v-slot="{ Component }">
-      <keep-alive>
-        <component :is="Component" />
-      </keep-alive>
+      <component :is="Component" />
     </router-view>
   </el-config-provider>
 </template>
@@ -11,13 +9,22 @@
 <script setup>
 import { ElConfigProvider } from 'element-plus'
 import { onMounted } from 'vue'
+import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 
+const userStore = useUserStore()
 const router = useRouter()
 
-onMounted(() => {
-  console.log('App mounted')
-  console.log('Current route:', router.currentRoute.value)
+onMounted(async () => {
+  if (userStore.token) {
+    try {
+      await userStore.getInfo()
+    } catch (error) {
+      console.error('Failed to get user info:', error)
+      userStore.resetState()
+      router.push('/login')
+    }
+  }
 })
 </script>
 
@@ -31,5 +38,10 @@ html, body {
 
 #app {
   height: 100%;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #f5f5f5;
 }
 </style> 

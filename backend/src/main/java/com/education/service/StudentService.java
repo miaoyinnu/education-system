@@ -138,23 +138,22 @@ public class StudentService {
         
         // 获取成绩信息
         List<Grade> grades = gradeMapper.findByStudentId(studentId, null);
-        if (!grades.isEmpty()) {
-            // 计算总学分
-            double totalCredits = grades.stream()
-                .map(grade -> grade.getCourse().getCredit())
-                .filter(credit -> credit != null)
-                .mapToDouble(Double::doubleValue)
-                .sum();
-            stats.setTotalCredits((int) totalCredits);
-            
-            // 计算平均成绩
-            double averageScore = grades.stream()
-                .filter(grade -> grade.getScore() != null)
-                .mapToDouble(Grade::getScore)
-                .average()
-                .orElse(0.0);
-            stats.setAverageScore(averageScore);
-        }
+        
+        // 计算总学分
+        double totalCredits = grades.stream()
+            .map(grade -> grade.getCourse().getCredit())
+            .filter(credit -> credit != null)
+            .mapToDouble(Double::doubleValue)
+            .sum();
+        stats.setTotalCredits((int) totalCredits);
+        
+        // 计算平均成绩
+        double averageScore = grades.stream()
+            .filter(grade -> grade.getScore() != null)
+            .mapToDouble(Grade::getScore)
+            .average()
+            .orElse(0.0);
+        stats.setAverageScore(averageScore);
         
         return stats;
     }

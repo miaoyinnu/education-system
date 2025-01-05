@@ -9,7 +9,7 @@
             </div>
           </template>
           <div class="card-content">
-            <span class="number">{{ stats.totalCourses }}</span>
+            <span class="number">{{ stats?.totalCourses || 0 }}</span>
           </div>
         </el-card>
       </el-col>
@@ -21,7 +21,7 @@
             </div>
           </template>
           <div class="card-content">
-            <span class="number">{{ stats.totalCredits }}</span>
+            <span class="number">{{ stats?.totalCredits || 0 }}</span>
           </div>
         </el-card>
       </el-col>
@@ -33,7 +33,7 @@
             </div>
           </template>
           <div class="card-content">
-            <span class="number">{{ stats.averageScore.toFixed(1) }}</span>
+            <span class="number">{{ (stats?.averageScore || 0).toFixed(1) }}</span>
           </div>
         </el-card>
       </el-col>
@@ -45,7 +45,7 @@
           <span>我的课程</span>
         </div>
       </template>
-      <el-table :data="courses" stripe>
+      <el-table :data="courses" stripe v-loading="loading">
         <el-table-column prop="name" label="课程名称" />
         <el-table-column prop="teacher" label="任课教师" />
         <el-table-column prop="time" label="上课时间" />
@@ -67,11 +67,17 @@ const stats = ref({
 })
 
 const courses = ref([])
+const loading = ref(true)
 
 const fetchStats = async () => {
   try {
-    const res = await request.get('/api/student/stats')
-    stats.value = res.data
+    const res = await request.get('/student/stats')
+    console.log('统计数据:', res)
+    stats.value = res || {
+      totalCourses: 0,
+      totalCredits: 0,
+      averageScore: 0
+    }
   } catch (error) {
     console.error('获取统计信息失败:', error)
     ElMessage.error('获取统计信息失败')
@@ -80,17 +86,19 @@ const fetchStats = async () => {
 
 const fetchCourses = async () => {
   try {
-    const res = await request.get('/api/student/courses')
-    courses.value = res.data
+    const res = await request.get('/student/courses')
+    console.log('课程数据:', res)
+    courses.value = Array.isArray(res) ? res : []
   } catch (error) {
     console.error('获取课程信息失败:', error)
     ElMessage.error('获取课程信息失败')
+  } finally {
+    loading.value = false
   }
 }
 
-onMounted(() => {
-  fetchStats()
-  fetchCourses()
+onMounted(async () => {
+  await Promise.all([fetchStats(), fetchCourses()])
 })
 </script>
 

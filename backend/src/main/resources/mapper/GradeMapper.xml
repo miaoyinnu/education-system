@@ -98,4 +98,47 @@
     <update id="publishGrades">
         UPDATE grade SET is_published = 1 WHERE course_id = #{courseId}
     </update>
+
+    <select id="getCourseAverageGrades" resultType="java.util.Map">
+        SELECT c.name as course_name,
+               AVG(g.score) as average_score
+        FROM course c
+        LEFT JOIN grade g ON c.id = g.course_id
+        WHERE g.is_published = true
+        GROUP BY c.id, c.name
+    </select>
+    
+    <select id="getGradeDistribution" resultType="java.util.Map">
+        SELECT 
+            COUNT(CASE WHEN score &gt;= 90 THEN 1 END) as A,
+            COUNT(CASE WHEN score &gt;= 80 AND score &lt; 90 THEN 1 END) as B,
+            COUNT(CASE WHEN score &gt;= 70 AND score &lt; 80 THEN 1 END) as C,
+            COUNT(CASE WHEN score &gt;= 60 AND score &lt; 70 THEN 1 END) as D,
+            COUNT(CASE WHEN score &lt; 60 THEN 1 END) as F
+        FROM grade
+        WHERE is_published = true
+    </select>
+    
+    <select id="getCoursePassRates" resultType="java.util.Map">
+        SELECT c.name,
+               COUNT(CASE WHEN g.score &gt;= 60 THEN 1 END) * 100.0 / COUNT(*) as pass_rate
+        FROM course c
+        LEFT JOIN grade g ON c.id = g.course_id
+        WHERE g.is_published = true
+        GROUP BY c.id, c.name
+    </select>
+    
+    <select id="findGradeAlerts" resultType="java.util.Map">
+        SELECT s.name as student_name,
+               c.name as course_name,
+               g.score,
+               gas.threshold
+        FROM grade g
+        JOIN student s ON g.student_id = s.id
+        JOIN course c ON g.course_id = c.id
+        JOIN grade_alert_settings gas ON g.course_id = gas.course_id
+        WHERE g.score &lt; gas.threshold
+        AND g.is_published = true
+        ORDER BY g.score ASC
+    </select>
 </mapper> 

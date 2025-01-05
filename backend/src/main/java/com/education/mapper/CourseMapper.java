@@ -5,6 +5,7 @@ import com.education.dto.CourseDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface CourseMapper {
@@ -32,4 +33,11 @@ public interface CourseMapper {
     boolean hasTeacherTimeConflict(CourseDTO course);
     boolean hasClassroomTimeConflict(CourseDTO course);
     void updateSchedule(CourseDTO course);
+    List<CourseDTO> findUnscheduledCourses();
+
+    // 统计相关
+    int countTotal();
+    List<Map<String, Object>> getDailySelectionStats();
+    List<Map<String, Object>> getWeeklySelectionStats();
+    List<Map<String, Object>> getMonthlySelectionStats();
 } 

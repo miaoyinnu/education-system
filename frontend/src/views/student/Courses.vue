@@ -53,10 +53,11 @@ const courses = ref([])
 
 const fetchCourses = async (search = '') => {
   try {
-    const res = await request.get('/api/student/available-courses', {
+    const res = await request.get('/student/available-courses', {
       params: { search }
     })
-    courses.value = res.data
+    console.log('课程列表:', res)
+    courses.value = Array.isArray(res) ? res : []
   } catch (error) {
     console.error('获取课程列表失败:', error)
     ElMessage.error('获取课程列表失败')
@@ -69,7 +70,7 @@ const handleSearch = () => {
 
 const handleSelect = async (course) => {
   try {
-    await request.post('/api/student/select-course', {
+    await request.post('/student/select-course', {
       courseId: course.id
     })
     ElMessage.success('选课成功')

@@ -7,7 +7,10 @@ public class ClassroomDTO {
     private Long id;
     private String name;
     private Integer capacity;
-    private String building; // 教学楼
-    private String type;     // 教室类型(普通/多媒体/实验室)
-    private String status;   // 使用状态
+    private String status;  // 可用、维修中、已预约
+    private String building;
+    private String floor;
+    private String type;    // 普通教室、实验室、多媒体教室等
+    private String equipment;  // 教室配备的设备
+    private String remark;
 } 
