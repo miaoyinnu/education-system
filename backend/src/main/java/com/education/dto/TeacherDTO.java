@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 public class TeacherDTO {
     private Long id;
     private String name;
+    private Long userId;      // 关联的用户ID
     private String title;      // 职称
     private String department; // 所属院系
     private String email;

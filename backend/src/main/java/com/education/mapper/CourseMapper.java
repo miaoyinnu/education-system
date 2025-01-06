@@ -44,4 +44,7 @@ public interface CourseMapper {
 
     List<CourseDTO> findByPage(@Param("offset") int offset, @Param("size") int size, @Param("search") String search);
     int count(@Param("search") String search);
+
+    // 检查教室是否有课程
+    boolean hasClassroomCourses(Long classroomId);
 } 

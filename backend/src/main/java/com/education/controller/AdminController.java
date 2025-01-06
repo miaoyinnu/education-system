@@ -59,6 +59,12 @@ public class AdminController {
         return Result.success(adminService.updateTeacher(teacherDTO));
     }
 
+    @DeleteMapping("/teachers/{id}")
+    public Result<Void> deleteTeacher(@PathVariable Long id) {
+        adminService.deleteTeacher(id);
+        return Result.success();
+    }
+
     // 教室管理
     @GetMapping("/classrooms")
     public Result<List<ClassroomDTO>> getClassrooms() {
@@ -74,6 +80,12 @@ public class AdminController {
     public Result<ClassroomDTO> updateClassroom(@PathVariable Long id, @RequestBody ClassroomDTO classroomDTO) {
         classroomDTO.setId(id);
         return Result.success(adminService.updateClassroom(classroomDTO));
+    }
+
+    @DeleteMapping("/classrooms/{id}")
+    public Result<Void> deleteClassroom(@PathVariable Long id) {
+        adminService.deleteClassroom(id);
+        return Result.success();
     }
 
     // 自动排课

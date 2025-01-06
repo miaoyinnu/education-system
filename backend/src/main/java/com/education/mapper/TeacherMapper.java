@@ -1,6 +1,7 @@
 package com.education.mapper;
 
 import com.education.entity.Course;
+import com.education.entity.Teacher;
 import com.education.dto.TeacherDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -12,7 +13,7 @@ public interface TeacherMapper {
     
     // 管理员相关方法
     List<TeacherDTO> findAll();
-    void insert(TeacherDTO teacher);
+    void insert(Teacher teacher);
     void update(TeacherDTO teacher);
     void delete(Long id);
     boolean hasOngoingCourses(Long id);

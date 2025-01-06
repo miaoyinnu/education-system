@@ -245,15 +245,22 @@
 
     <!-- 统计总数 -->
     <select id="count" resultType="int">
-        SELECT COUNT(*)
-        FROM course c
-        LEFT JOIN teacher t ON c.teacher_id = t.id
-        <where>
-            <if test="search != null and search != ''">
-                AND (c.name LIKE CONCAT('%', #{search}, '%')
-                OR t.name LIKE CONCAT('%', #{search}, '%'))
-            </if>
-        </where>
+        SELECT COUNT(*) FROM course
+        <if test="search != null and search != ''">
+            WHERE name LIKE CONCAT('%', #{search}, '%')
+        </if>
+    </select>
+
+    <select id="hasClassroomCourses" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1 FROM course 
+            WHERE classroom_id = #{classroomId} 
+            AND semester = (
+                SELECT semester FROM course 
+                WHERE classroom_id = #{classroomId} 
+                ORDER BY id DESC LIMIT 1
+            )
+        )
     </select>
 
     <resultMap id="courseResultMap" type="com.education.entity.Course">

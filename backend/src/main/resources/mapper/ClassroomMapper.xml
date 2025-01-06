@@ -3,14 +3,28 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.education.mapper.ClassroomMapper">
     <insert id="insert" parameterType="com.education.dto.ClassroomDTO">
-        INSERT INTO classroom (name, capacity, status)
-        VALUES (#{name}, #{capacity}, #{status})
+        INSERT INTO classroom (
+            name, 
+            capacity, 
+            building,
+            type,
+            status
+        )
+        VALUES (
+            #{name}, 
+            #{capacity}, 
+            #{building},
+            #{type},
+            #{status}
+        )
     </insert>
     
     <update id="update" parameterType="com.education.dto.ClassroomDTO">
         UPDATE classroom
         SET name = #{name},
             capacity = #{capacity},
+            building = #{building},
+            type = #{type},
             status = #{status}
         WHERE id = #{id}
     </update>
@@ -20,8 +34,15 @@
     </delete>
     
     <select id="findAll" resultType="com.education.dto.ClassroomDTO">
-        SELECT id, name, capacity, status
+        SELECT 
+            id, 
+            name, 
+            capacity, 
+            building,
+            type,
+            status
         FROM classroom
+        ORDER BY id ASC
     </select>
     
     <select id="countTotal" resultType="int">

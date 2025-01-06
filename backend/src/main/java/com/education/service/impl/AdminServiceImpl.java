@@ -29,6 +29,8 @@ public class AdminServiceImpl implements AdminService {
     private GradeAlertSettingsMapper alertSettingsMapper;
     @Autowired
     private CourseScheduler courseScheduler;
+    @Autowired
+    private UserMapper userMapper;
 
     // 课程管理
     @Override
@@ -77,7 +79,21 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public TeacherDTO addTeacher(TeacherDTO teacherDTO) {
         validateTeacher(teacherDTO);
-        teacherMapper.insert(teacherDTO);
+        
+        // 检查用户是否存在
+        User user = userMapper.findById(teacherDTO.getUserId());
+        if (user == null) {
+            throw new IllegalArgumentException("用户ID不存在，请先创建用户");
+        }
+        
+        // 转换DTO为实体
+        Teacher teacher = new Teacher();
+        teacher.setName(teacherDTO.getName());
+        teacher.setUserId(teacherDTO.getUserId());
+        
+        teacherMapper.insert(teacher);
+        // 设置返回的DTO的ID
+        teacherDTO.setId(teacher.getId());
         return teacherDTO;
     }
 
@@ -87,6 +103,16 @@ public class AdminServiceImpl implements AdminService {
         validateTeacher(teacherDTO);
         teacherMapper.update(teacherDTO);
         return teacherDTO;
+    }
+
+    @Override
+    @Transactional
+    public void deleteTeacher(Long id) {
+        // 检查教师是否有正在进行的课程
+        if (teacherMapper.hasOngoingCourses(id)) {
+            throw new IllegalStateException("该教师有正在进行的课程，无法删除");
+        }
+        teacherMapper.delete(id);
     }
 
     // 教室管理
@@ -109,6 +135,16 @@ public class AdminServiceImpl implements AdminService {
         validateClassroom(classroomDTO);
         classroomMapper.update(classroomDTO);
         return classroomDTO;
+    }
+
+    @Override
+    @Transactional
+    public void deleteClassroom(Long id) {
+        // 检查教室是否有正在进行的课程
+        if (courseMapper.hasClassroomCourses(id)) {
+            throw new IllegalStateException("该教室有正在进行的课程，无法删除");
+        }
+        classroomMapper.delete(id);
     }
 
     // 自动排课

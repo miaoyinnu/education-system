@@ -15,11 +15,13 @@ public interface AdminService {
     List<TeacherDTO> getTeachers();
     TeacherDTO addTeacher(TeacherDTO teacherDTO);
     TeacherDTO updateTeacher(TeacherDTO teacherDTO);
+    void deleteTeacher(Long id);
 
     // 教室管理
     List<ClassroomDTO> getClassrooms();
     ClassroomDTO addClassroom(ClassroomDTO classroomDTO);
     ClassroomDTO updateClassroom(ClassroomDTO classroomDTO);
+    void deleteClassroom(Long id);
 
     // 自动排课
     List<CourseDTO> autoScheduleCourses();

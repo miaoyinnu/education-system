@@ -30,10 +30,14 @@
       <el-table :data="classrooms" style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="教室ID" width="80" />
         <el-table-column prop="name" label="教室名称" />
+        <el-table-column prop="building" label="教学楼" />
+        <el-table-column prop="type" label="教室类型" />
         <el-table-column prop="capacity" label="容量" width="100" />
-        <el-table-column prop="usageRate" label="使用率" width="100">
+        <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
-            {{ row.usageRate }}%
+            <el-tag :type="row.status === '正常' ? 'success' : 'danger'">
+              {{ row.status }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="200">
@@ -65,7 +69,7 @@
       width="500px"
     >
       <el-form
-        ref="classroomForm"
+        ref="classroomFormRef"
         :model="classroomForm"
         :rules="rules"
         label-width="100px"
@@ -73,8 +77,31 @@
         <el-form-item label="教室名称" prop="name">
           <el-input v-model="classroomForm.name" placeholder="如：201" />
         </el-form-item>
+        <el-form-item label="教学楼" prop="building">
+          <el-select v-model="classroomForm.building" placeholder="请选择教学楼">
+            <el-option label="教学楼A" value="教学楼A" />
+            <el-option label="教学楼B" value="教学楼B" />
+            <el-option label="实验楼" value="实验楼" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="教室类型" prop="type">
+          <el-select v-model="classroomForm.type" placeholder="请选择教室类型">
+            <el-option label="多媒体教室" value="多媒体教室" />
+            <el-option label="普通教室" value="普通教室" />
+            <el-option label="阶梯教室" value="阶梯教室" />
+            <el-option label="计算机实验室" value="计算机实验室" />
+            <el-option label="物理实验室" value="物理实验室" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="容量" prop="capacity">
           <el-input-number v-model="classroomForm.capacity" :min="1" />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-select v-model="classroomForm.status" placeholder="请选择状态">
+            <el-option label="正常" value="正常" />
+            <el-option label="维修中" value="维修中" />
+            <el-option label="停用" value="停用" />
+          </el-select>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -104,15 +131,22 @@ const searchQuery = ref('')
 // 对话框相关
 const dialogVisible = ref(false)
 const dialogType = ref('add')
+const classroomFormRef = ref(null)
 const classroomForm = ref({
   name: '',
-  capacity: 50
+  building: '',
+  type: '',
+  capacity: 50,
+  status: '正常'
 })
 
 // 表单验证规则
 const rules = {
   name: [{ required: true, message: '请输入教室名称', trigger: 'blur' }],
-  capacity: [{ required: true, message: '请输入容量', trigger: 'blur' }]
+  building: [{ required: true, message: '请选择教学楼', trigger: 'change' }],
+  type: [{ required: true, message: '请选择教室类型', trigger: 'change' }],
+  capacity: [{ required: true, message: '请输入容量', trigger: 'blur' }],
+  status: [{ required: true, message: '请选择状态', trigger: 'change' }]
 }
 
 // 获取教室列表
@@ -141,16 +175,32 @@ const handleAdd = () => {
   dialogType.value = 'add'
   classroomForm.value = {
     name: '',
-    capacity: 50
+    building: '',
+    type: '',
+    capacity: 50,
+    status: '正常'
   }
   dialogVisible.value = true
+  // 重置表单验证
+  if (classroomFormRef.value) {
+    classroomFormRef.value.resetFields()
+  }
 }
 
 // 编辑教室
 const handleEdit = (row) => {
   dialogType.value = 'edit'
-  classroomForm.value = { ...row }
+  classroomForm.value = {
+    ...row,
+    building: row.building || '',
+    type: row.type || '',
+    status: row.status || '正常'
+  }
   dialogVisible.value = true
+  // 重置表单验证
+  if (classroomFormRef.value) {
+    classroomFormRef.value.resetFields()
+  }
 }
 
 // 删除教室
@@ -172,12 +222,22 @@ const handleDelete = async (row) => {
 
 // 提交表单
 const handleSubmit = async () => {
+  if (!classroomFormRef.value) return
+
   try {
+    await classroomFormRef.value.validate()
+    const formData = {
+      ...classroomForm.value,
+      building: classroomForm.value.building,
+      type: classroomForm.value.type,
+      status: classroomForm.value.status
+    }
+
     if (dialogType.value === 'add') {
-      await request.post('/admin/classrooms', classroomForm.value)
+      await request.post('/admin/classrooms', formData)
       ElMessage.success('添加成功')
     } else {
-      await request.put(`/admin/classrooms/${classroomForm.value.id}`, classroomForm.value)
+      await request.put(`/admin/classrooms/${formData.id}`, formData)
       ElMessage.success('更新成功')
     }
     dialogVisible.value = false

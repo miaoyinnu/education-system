@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { getToken } from '@/utils/auth'
 import { useUserStore } from '@/stores/user'
 import Layout from '@/layout/index.vue'
+import adminRoutes from './modules/admin'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -75,38 +76,7 @@ const router = createRouter({
         }
       ]
     },
-    {
-      path: '/admin',
-      component: Layout,
-      redirect: '/admin/dashboard',
-      meta: { role: 'ADMIN', requiresAuth: true },
-      children: [
-        {
-          path: 'dashboard',
-          name: 'AdminDashboard',
-          component: () => import('@/views/admin/Dashboard.vue'),
-          meta: { title: '管理员首页', role: 'ADMIN' }
-        },
-        {
-          path: 'courses',
-          name: 'AdminCourses',
-          component: () => import('@/views/admin/Courses.vue'),
-          meta: { title: '课程管理', role: 'ADMIN' }
-        },
-        {
-          path: 'classrooms',
-          name: 'AdminClassrooms',
-          component: () => import('@/views/admin/Classrooms.vue'),
-          meta: { title: '教室管理', role: 'ADMIN' }
-        },
-        {
-          path: 'analysis',
-          name: 'AdminAnalysis',
-          component: () => import('@/views/admin/Analysis.vue'),
-          meta: { title: '统计分析', role: 'ADMIN' }
-        }
-      ]
-    }
+    adminRoutes
   ]
 })
 

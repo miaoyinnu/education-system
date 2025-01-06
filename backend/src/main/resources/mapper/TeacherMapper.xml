@@ -18,14 +18,29 @@
         WHERE t.user_id = #{teacherId}
     </select>
 
-    <select id="findAll" resultType="com.education.dto.TeacherDTO">
-        SELECT 
-            t.id,
-            t.name,
-            t.user_id as userId,
-            u.username
-        FROM teacher t
-        LEFT JOIN user u ON t.user_id = u.id
+    <select id="findByPage" resultType="com.education.entity.Teacher">
+        SELECT * FROM teacher
+        <where>
+            <if test="search != null and search != ''">
+                AND name LIKE CONCAT('%', #{search}, '%')
+            </if>
+        </where>
+        ORDER BY id ASC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM teacher
+        <where>
+            <if test="search != null and search != ''">
+                AND name LIKE CONCAT('%', #{search}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="findAll" resultType="com.education.entity.Teacher">
+        SELECT * FROM teacher
+        ORDER BY id ASC
     </select>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
@@ -35,7 +50,8 @@
 
     <update id="update">
         UPDATE teacher
-        SET name = #{name}
+        SET name = #{name},
+            user_id = #{userId}
         WHERE id = #{id}
     </update>
 
