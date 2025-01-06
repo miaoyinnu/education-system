@@ -3,7 +3,7 @@
     <!-- 侧边栏 -->
     <div class="sidebar-container">
       <div class="logo">
-        <span>学生选课系统</span>
+        <span>高校课程管理系统</span>
       </div>
       <el-menu
         :default-active="activeMenu"

@@ -167,4 +167,15 @@ public class AdminController {
         adminService.deleteUser(id);
         return Result.success();
     }
+
+    // 排课相关
+    @GetMapping("/courses/scheduled")
+    public Result<List<CourseDTO>> getScheduledCourses() {
+        return Result.success(adminService.getScheduledCourses());
+    }
+
+    @GetMapping("/courses/unscheduled")
+    public Result<List<CourseDTO>> getUnscheduledCourses() {
+        return Result.success(adminService.getUnscheduledCourses());
+    }
 } 

@@ -8,6 +8,7 @@ public class Course {
     private String name;
     private String semester;
     private String courseTime;  // 课程时间
+    private Long timeSlotId;    // 时间槽ID
     private Long classroomId;  // 教室ID
     private String classroomName;  // 教室名称
     private Long teacherId;  // 教师ID

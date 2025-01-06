@@ -19,4 +19,5 @@ public class CourseDTO {
     private Integer maxStudents;
     private Integer currentStudents;
     private Double credit;
+    private Long timeSlotId;
 } 

@@ -160,7 +160,8 @@
     <update id="updateSchedule" parameterType="com.education.dto.CourseDTO">
         UPDATE course
         SET classroom_id = #{classroomId},
-            time_slot_id = #{timeSlotId}
+            time_slot_id = #{timeSlotId},
+            course_time = #{time}
         WHERE id = #{id}
     </update>
 
@@ -172,6 +173,16 @@
         LEFT JOIN teacher t ON c.teacher_id = t.id
         LEFT JOIN classroom cl ON c.classroom_id = cl.id
         WHERE c.course_time IS NULL
+    </select>
+
+    <!-- 查找已排课的课程 -->
+    <select id="findScheduledCourses" resultType="com.education.dto.CourseDTO">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM course c
+        LEFT JOIN teacher t ON c.teacher_id = t.id
+        LEFT JOIN classroom cl ON c.classroom_id = cl.id
+        WHERE c.course_time IS NOT NULL
     </select>
 
     <!-- 统计相关 -->
@@ -269,6 +280,7 @@
         <result property="teacherId" column="teacher_id"/>
         <result property="teacherName" column="teacher_name"/>
         <result property="courseTime" column="course_time"/>
+        <result property="timeSlotId" column="time_slot_id"/>
         <result property="classroomId" column="classroom_id"/>
         <result property="classroomName" column="classroom_name"/>
         <result property="maxStudents" column="max_students"/>

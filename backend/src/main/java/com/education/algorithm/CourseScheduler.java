@@ -67,6 +67,7 @@ public class CourseScheduler {
                         
                         // 分配时间和教室
                         course.setTime(timeSlot);
+                        course.setTimeSlotId(Arrays.asList(TIME_SLOTS).indexOf(timeSlot) + 1L);
                         course.setLocation(classroom.getName());
                         course.setClassroomId(classroom.getId());
                         course.setClassroomName(classroom.getName());

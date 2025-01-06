@@ -447,4 +447,14 @@ public class AdminServiceImpl implements AdminService {
         
         userMapper.delete(id);
     }
+
+    @Override
+    public List<CourseDTO> getScheduledCourses() {
+        return courseMapper.findScheduledCourses();
+    }
+
+    @Override
+    public List<CourseDTO> getUnscheduledCourses() {
+        return courseMapper.findUnscheduledCourses();
+    }
 } 

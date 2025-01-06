@@ -51,4 +51,8 @@ public interface AdminService {
     User addUser(User user);
     User updateUser(User user);
     void deleteUser(Long id);
+
+    // 排课相关
+    List<CourseDTO> getScheduledCourses();
+    List<CourseDTO> getUnscheduledCourses();
 } 

@@ -5,6 +5,7 @@ import Teachers from '@/views/admin/Teachers.vue'
 import Classrooms from '@/views/admin/Classrooms.vue'
 import Users from '@/views/admin/Users.vue'
 import Analysis from '@/views/admin/Analysis.vue'
+import CourseSchedule from '@/views/admin/CourseSchedule.vue'
 
 const adminRoutes = {
   path: '/admin',
@@ -21,6 +22,12 @@ const adminRoutes = {
       name: 'AdminCourses',
       component: Courses,
       meta: { title: '课程管理' }
+    },
+    {
+      path: 'schedule',
+      name: 'CourseSchedule',
+      component: CourseSchedule,
+      meta: { title: '排课系统' }
     },
     {
       path: 'teachers',

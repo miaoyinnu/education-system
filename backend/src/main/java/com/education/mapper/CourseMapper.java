@@ -34,6 +34,7 @@ public interface CourseMapper {
     boolean hasClassroomTimeConflict(CourseDTO course);
     void updateSchedule(CourseDTO course);
     List<CourseDTO> findUnscheduledCourses();
+    List<CourseDTO> findScheduledCourses();
 
     // 统计相关
     int countTotal();

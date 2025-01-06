@@ -32,6 +32,7 @@ CREATE TABLE course (
     teacher_id BIGINT,
     classroom_id BIGINT,
     course_time VARCHAR(100),
+    time_slot_id BIGINT,
     semester VARCHAR(50),
     max_students INT DEFAULT 50,
     current_students INT DEFAULT 0,

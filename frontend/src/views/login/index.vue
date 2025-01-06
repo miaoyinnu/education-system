@@ -2,7 +2,7 @@
   <div class="login-container">
     <el-card class="login-card">
       <template #header>
-        <h2 class="login-title">教务管理系统</h2>
+        <h2 class="login-title">高校课程管理系统</h2>
       </template>
       <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" label-width="0">
         <el-form-item prop="username">

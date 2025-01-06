@@ -5,6 +5,9 @@
         :router="true"
         :default-active="$route.path"
         class="menu"
+        background-color="#304156"
+        text-color="#bfcbd9"
+        active-text-color="#409EFF"
       >
         <el-menu-item index="/admin/dashboard">
           <el-icon><DataLine /></el-icon>
@@ -13,6 +16,10 @@
         <el-menu-item index="/admin/courses">
           <el-icon><Reading /></el-icon>
           <span>课程管理</span>
+        </el-menu-item>
+        <el-menu-item index="/admin/schedule">
+          <el-icon><Calendar /></el-icon>
+          <span>排课系统</span>
         </el-menu-item>
         <el-menu-item index="/admin/teachers">
           <el-icon><User /></el-icon>
@@ -51,7 +58,7 @@
 </template>
 
 <script setup>
-import { DataLine, Reading, User, School, UserFilled, TrendCharts, Warning } from '@element-plus/icons-vue'
+import { DataLine, Reading, User, School, UserFilled, TrendCharts, Calendar } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'

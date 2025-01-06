@@ -2,7 +2,7 @@
   <div class="login-container">
     <el-card class="login-card">
       <template #header>
-        <h2 class="login-title">学生选课系统</h2>
+        <h2 class="login-title">高校课程管理系统</h2>
       </template>
       <el-form :model="loginForm" :rules="rules" ref="loginFormRef" class="login-form">
         <el-form-item prop="username">
@@ -42,7 +42,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
@@ -52,6 +52,11 @@ const router = useRouter()
 const loginFormRef = ref(null)
 const userStore = useUserStore()
 const loading = ref(false)
+
+// 设置网页标题
+onMounted(() => {
+  document.title = '高校课程管理系统'
+})
 
 const loginForm = reactive({
   username: '',
