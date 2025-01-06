@@ -16,42 +16,61 @@ public class AdminController {
     private AdminService adminService;
 
     // 课程管理
-    @PostMapping("/course")
+    @GetMapping("/courses")
+    public Result<Map<String, Object>> getCourses(
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String search
+    ) {
+        return Result.success(adminService.getCourses(page, size, search));
+    }
+
+    @PostMapping("/courses")
     public Result<CourseDTO> addCourse(@RequestBody CourseDTO courseDTO) {
         return Result.success(adminService.addCourse(courseDTO));
     }
 
-    @PutMapping("/course/{id}")
+    @PutMapping("/courses/{id}")
     public Result<CourseDTO> updateCourse(@PathVariable Long id, @RequestBody CourseDTO courseDTO) {
         courseDTO.setId(id);
         return Result.success(adminService.updateCourse(courseDTO));
     }
 
-    @DeleteMapping("/course/{id}")
+    @DeleteMapping("/courses/{id}")
     public Result<Void> deleteCourse(@PathVariable Long id) {
         adminService.deleteCourse(id);
         return Result.success();
     }
 
     // 教师管理
-    @PostMapping("/teacher")
+    @GetMapping("/teachers")
+    public Result<List<TeacherDTO>> getTeachers() {
+        return Result.success(adminService.getTeachers());
+    }
+
+    @PostMapping("/teachers")
     public Result<TeacherDTO> addTeacher(@RequestBody TeacherDTO teacherDTO) {
         return Result.success(adminService.addTeacher(teacherDTO));
     }
 
-    @PutMapping("/teacher/{id}")
+    @PutMapping("/teachers/{id}")
     public Result<TeacherDTO> updateTeacher(@PathVariable Long id, @RequestBody TeacherDTO teacherDTO) {
         teacherDTO.setId(id);
         return Result.success(adminService.updateTeacher(teacherDTO));
     }
 
     // 教室管理
-    @PostMapping("/classroom")
+    @GetMapping("/classrooms")
+    public Result<List<ClassroomDTO>> getClassrooms() {
+        return Result.success(adminService.getClassrooms());
+    }
+
+    @PostMapping("/classrooms")
     public Result<ClassroomDTO> addClassroom(@RequestBody ClassroomDTO classroomDTO) {
         return Result.success(adminService.addClassroom(classroomDTO));
     }
 
-    @PutMapping("/classroom/{id}")
+    @PutMapping("/classrooms/{id}")
     public Result<ClassroomDTO> updateClassroom(@PathVariable Long id, @RequestBody ClassroomDTO classroomDTO) {
         classroomDTO.setId(id);
         return Result.success(adminService.updateClassroom(classroomDTO));
@@ -95,5 +114,16 @@ public class AdminController {
     @GetMapping("/grade-alert")
     public Result<List<Map<String, Object>>> getGradeAlerts() {
         return Result.success(adminService.getGradeAlerts());
+    }
+
+    // 仪表盘相关
+    @GetMapping("/todo-list")
+    public Result<List<Map<String, Object>>> getTodoList() {
+        return Result.success(adminService.getTodoList());
+    }
+
+    @GetMapping("/system-status")
+    public Result<Map<String, Object>> getSystemStatus() {
+        return Result.success(adminService.getSystemStatus());
     }
 } 

@@ -19,4 +19,7 @@ public interface TeacherMapper {
     
     @Select("SELECT name FROM teacher WHERE id = #{id}")
     String findNameById(Long id);
+
+    @Select("SELECT COUNT(*) FROM teacher")
+    int countTotal();
 } 

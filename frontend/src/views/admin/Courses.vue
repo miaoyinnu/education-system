@@ -162,8 +162,13 @@ const fetchCourses = async () => {
         search: searchQuery.value
       }
     })
-    courses.value = res.data
-    total.value = res.total
+    if (res.code === 200 && res.data) {
+      courses.value = res.data.data || []
+      total.value = res.data.total || 0
+    } else {
+      courses.value = []
+      total.value = 0
+    }
   } catch (error) {
     console.error('获取课程列表失败:', error)
     ElMessage.error('获取课程列表失败')
@@ -176,7 +181,7 @@ const fetchCourses = async () => {
 const fetchTeachers = async () => {
   try {
     const res = await request.get('/admin/teachers')
-    teachers.value = res
+    teachers.value = Array.isArray(res) ? res : []
   } catch (error) {
     console.error('获取教师列表失败:', error)
     ElMessage.error('获取教师列表失败')
@@ -187,7 +192,7 @@ const fetchTeachers = async () => {
 const fetchClassrooms = async () => {
   try {
     const res = await request.get('/admin/classrooms')
-    classrooms.value = res
+    classrooms.value = Array.isArray(res) ? res : []
   } catch (error) {
     console.error('获取教室列表失败:', error)
     ElMessage.error('获取教室列表失败')

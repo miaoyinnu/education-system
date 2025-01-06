@@ -43,24 +43,33 @@
     </select>
 
     <select id="findByStudentId" resultMap="courseResultMap">
-        SELECT c.*, t.name as teacher_name, cr.name as classroom_name
+        SELECT 
+            c.id, c.name, 
+            c.teacher_id, t.name as teacher_name,
+            c.course_time,
+            c.classroom_id, cl.name as classroom_name,
+            c.max_students as maxStudents,
+            c.current_students as currentStudents,
+            c.credit, c.semester
         FROM course c
         JOIN course_selection cs ON c.id = cs.course_id
         JOIN teacher t ON c.teacher_id = t.id
-        JOIN classroom cr ON c.classroom_id = cr.id
+        JOIN classroom cl ON c.classroom_id = cl.id
         WHERE cs.student_id = #{studentId}
     </select>
 
     <select id="findAvailableCourses" resultMap="courseResultMap">
         SELECT 
-            c.id, c.name, c.course_time, c.semester,
-            c.max_students, c.current_students,
-            c.teacher_id, c.classroom_id, c.credit,
-            t.name as teacher_name,
-            cr.name as classroom_name
+            c.id, c.name, 
+            c.teacher_id, t.name as teacher_name,
+            c.course_time,
+            c.classroom_id, cl.name as classroom_name,
+            c.max_students as maxStudents,
+            c.current_students as currentStudents,
+            c.credit, c.semester
         FROM course c
         JOIN teacher t ON c.teacher_id = t.id
-        JOIN classroom cr ON c.classroom_id = cr.id
+        JOIN classroom cl ON c.classroom_id = cl.id
         WHERE c.id NOT IN (
             SELECT course_id FROM course_selection WHERE student_id = #{studentId}
         )
@@ -126,14 +135,6 @@
         AND id != #{id}
     </select>
 
-    <select id="findUnscheduledCourses" resultMap="courseResultMap">
-        SELECT c.*, t.name as teacher_name
-        FROM course c
-        LEFT JOIN teacher t ON c.teacher_id = t.id
-        WHERE c.classroom_id IS NULL
-        OR c.time_slot_id IS NULL
-    </select>
-
     <update id="updateSchedule" parameterType="com.education.dto.CourseDTO">
         UPDATE course
         SET classroom_id = #{classroomId},
@@ -141,9 +142,25 @@
         WHERE id = #{id}
     </update>
 
+    <!-- 查找未排课的课程 -->
+    <select id="findUnscheduledCourses" resultType="com.education.dto.CourseDTO">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM course c
+        LEFT JOIN teacher t ON c.teacher_id = t.id
+        LEFT JOIN classroom cl ON c.classroom_id = cl.id
+        WHERE c.course_time IS NULL
+    </select>
+
     <!-- 统计相关 -->
     <select id="countTotal" resultType="int">
         SELECT COUNT(*) FROM course
+    </select>
+
+    <select id="countUnscheduledCourses" resultType="int">
+        SELECT COUNT(*)
+        FROM course
+        WHERE course_time IS NULL
     </select>
 
     <select id="getDailySelectionStats" resultType="java.util.Map">
@@ -170,16 +187,57 @@
         GROUP BY DATE_FORMAT(cs.created_at, '%Y-%m')
     </select>
 
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        c.id, c.name, 
+        c.teacher_id, t.name as teacher_name,
+        c.course_time,
+        c.classroom_id, cl.name as classroom_name,
+        c.max_students as maxStudents,
+        c.current_students as currentStudents,
+        c.credit, c.semester
+    </sql>
+
+    <!-- 分页查询课程 -->
+    <select id="findByPage" resultMap="courseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM course c
+        LEFT JOIN teacher t ON c.teacher_id = t.id
+        LEFT JOIN classroom cl ON c.classroom_id = cl.id
+        <where>
+            <if test="search != null and search != ''">
+                AND (c.name LIKE CONCAT('%', #{search}, '%')
+                OR t.name LIKE CONCAT('%', #{search}, '%'))
+            </if>
+        </where>
+        ORDER BY c.id DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <!-- 统计总数 -->
+    <select id="count" resultType="int">
+        SELECT COUNT(*)
+        FROM course c
+        LEFT JOIN teacher t ON c.teacher_id = t.id
+        <where>
+            <if test="search != null and search != ''">
+                AND (c.name LIKE CONCAT('%', #{search}, '%')
+                OR t.name LIKE CONCAT('%', #{search}, '%'))
+            </if>
+        </where>
+    </select>
+
     <resultMap id="courseResultMap" type="com.education.entity.Course">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
-        <result property="courseTime" column="course_time"/>
-        <result property="semester" column="semester"/>
-        <result property="maxStudents" column="max_students"/>
-        <result property="currentStudents" column="current_students"/>
         <result property="teacherId" column="teacher_id"/>
+        <result property="courseTime" column="course_time"/>
         <result property="classroomId" column="classroom_id"/>
         <result property="classroomName" column="classroom_name"/>
+        <result property="maxStudents" column="max_students"/>
+        <result property="currentStudents" column="current_students"/>
         <result property="credit" column="credit"/>
+        <result property="semester" column="semester"/>
     </resultMap>
 </mapper> 

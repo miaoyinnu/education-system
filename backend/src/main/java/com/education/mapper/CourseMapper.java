@@ -10,7 +10,7 @@ import java.util.Map;
 @Mapper
 public interface CourseMapper {
     // 基础CRUD
-    List<Course> findAll();
+    List<CourseDTO> findAll();
     Course findById(Long id);
     void insert(CourseDTO course);
     void update(CourseDTO course);
@@ -25,7 +25,7 @@ public interface CourseMapper {
     void incrementCurrentStudents(Long courseId);
     
     // 教师相关
-    List<Course> findByTeacherId(Long teacherId);
+    List<CourseDTO> findByTeacherId(Long teacherId);
     boolean isTeacherOfCourse(@Param("teacherId") Long teacherId, @Param("courseId") Long courseId);
     
     // 管理员相关
@@ -37,7 +37,11 @@ public interface CourseMapper {
 
     // 统计相关
     int countTotal();
+    int countUnscheduledCourses();
     List<Map<String, Object>> getDailySelectionStats();
     List<Map<String, Object>> getWeeklySelectionStats();
     List<Map<String, Object>> getMonthlySelectionStats();
+
+    List<CourseDTO> findByPage(@Param("offset") int offset, @Param("size") int size, @Param("search") String search);
+    int count(@Param("search") String search);
 } 

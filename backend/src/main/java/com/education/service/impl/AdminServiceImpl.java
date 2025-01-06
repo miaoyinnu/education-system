@@ -32,6 +32,20 @@ public class AdminServiceImpl implements AdminService {
 
     // 课程管理
     @Override
+    public Map<String, Object> getCourses(int page, int size, String search) {
+        Map<String, Object> result = new HashMap<>();
+        // 计算偏移量
+        int offset = (page - 1) * size;
+        // 获取分页数据
+        List<CourseDTO> courses = courseMapper.findByPage(offset, size, search);
+        // 获取总数
+        int total = courseMapper.count(search);
+        result.put("data", courses);
+        result.put("total", total);
+        return result;
+    }
+
+    @Override
     @Transactional
     public CourseDTO addCourse(CourseDTO courseDTO) {
         validateCourse(courseDTO);
@@ -55,6 +69,11 @@ public class AdminServiceImpl implements AdminService {
 
     // 教师管理
     @Override
+    public List<TeacherDTO> getTeachers() {
+        return teacherMapper.findAll();
+    }
+
+    @Override
     @Transactional
     public TeacherDTO addTeacher(TeacherDTO teacherDTO) {
         validateTeacher(teacherDTO);
@@ -71,6 +90,11 @@ public class AdminServiceImpl implements AdminService {
     }
 
     // 教室管理
+    @Override
+    public List<ClassroomDTO> getClassrooms() {
+        return classroomMapper.findAll();
+    }
+
     @Override
     @Transactional
     public ClassroomDTO addClassroom(ClassroomDTO classroomDTO) {
@@ -165,6 +189,60 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public List<Map<String, Object>> getGradeAlerts() {
         return gradeMapper.findGradeAlerts();
+    }
+
+    // 仪表盘相关
+    @Override
+    public List<Map<String, Object>> getTodoList() {
+        List<Map<String, Object>> todoList = new ArrayList<>();
+        
+        // 获取未排课的课程数量
+        int unscheduledCourses = courseMapper.countUnscheduledCourses();
+        if (unscheduledCourses > 0) {
+            Map<String, Object> todo = new HashMap<>();
+            todo.put("type", "course");
+            todo.put("message", "有 " + unscheduledCourses + " 门课程待排课");
+            todo.put("count", unscheduledCourses);
+            todoList.add(todo);
+        }
+
+        // 获取成绩预警数量
+        int gradeAlerts = gradeMapper.countGradeAlerts();
+        if (gradeAlerts > 0) {
+            Map<String, Object> todo = new HashMap<>();
+            todo.put("type", "grade");
+            todo.put("message", "有 " + gradeAlerts + " 个成绩预警待处理");
+            todo.put("count", gradeAlerts);
+            todoList.add(todo);
+        }
+
+        return todoList;
+    }
+
+    @Override
+    public Map<String, Object> getSystemStatus() {
+        Map<String, Object> status = new HashMap<>();
+        
+        // 获取总课程数
+        int totalCourses = courseMapper.countTotal();
+        status.put("totalCourses", totalCourses);
+        
+        // 获取总教师数
+        int totalTeachers = teacherMapper.countTotal();
+        status.put("totalTeachers", totalTeachers);
+        
+        // 获取总教室数
+        int totalClassrooms = classroomMapper.countTotal();
+        status.put("totalClassrooms", totalClassrooms);
+        
+        // 获取选课统计
+        Map<String, Object> courseSelectionStats = new HashMap<>();
+        courseSelectionStats.put("daily", courseMapper.getDailySelectionStats());
+        courseSelectionStats.put("weekly", courseMapper.getWeeklySelectionStats());
+        courseSelectionStats.put("monthly", courseMapper.getMonthlySelectionStats());
+        status.put("courseSelectionStats", courseSelectionStats);
+
+        return status;
     }
 
     // 验证方法

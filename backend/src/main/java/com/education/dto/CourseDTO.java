@@ -17,4 +17,6 @@ public class CourseDTO {
     private Long classroomId;
     private String classroomName;
     private Integer maxStudents;
+    private Integer currentStudents;
+    private Double credit;
 } 

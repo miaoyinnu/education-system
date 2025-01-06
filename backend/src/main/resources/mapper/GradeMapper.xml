@@ -2,38 +2,24 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.education.mapper.GradeMapper">
-    <select id="findByStudentId" resultMap="gradeResultMap">
+    <select id="findByStudentId" resultType="com.education.dto.GradeDTO">
         SELECT 
-            g.id, g.student_id, g.course_id, g.score, g.created_at,
-            c.name as course_name, c.semester, c.credit,
-            c.teacher_id, c.classroom_id, cr.name as classroom_name,
-            t.name as teacher_name
+            g.id,
+            c.name as courseName,
+            t.name as teacherName,
+            g.score,
+            c.semester,
+            c.credit
         FROM grade g
         JOIN course c ON g.course_id = c.id
         JOIN teacher t ON c.teacher_id = t.id
-        LEFT JOIN classroom cr ON c.classroom_id = cr.id
         WHERE g.student_id = #{studentId}
         <if test="semester != null and semester != ''">
             AND c.semester = #{semester}
         </if>
-        ORDER BY g.created_at DESC
+        ORDER BY c.semester DESC, c.name ASC
     </select>
     
-    <resultMap id="gradeResultMap" type="com.education.entity.Grade">
-        <id property="id" column="id"/>
-        <result property="studentId" column="student_id"/>
-        <result property="courseId" column="course_id"/>
-        <result property="score" column="score"/>
-        <result property="createdAt" column="created_at"/>
-        <association property="course" javaType="com.education.entity.Course">
-            <result property="name" column="course_name"/>
-            <result property="semester" column="semester"/>
-            <result property="credit" column="credit"/>
-            <result property="teacherId" column="teacher_id"/>
-            <result property="classroomName" column="classroom_name"/>
-        </association>
-    </resultMap>
-
     <select id="findStudentsByCourseId" resultType="com.education.dto.StudentGradeDTO">
         SELECT 
             s.id as studentId,

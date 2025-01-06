@@ -3,6 +3,7 @@ package com.education.mapper;
 import com.education.entity.Grade;
 import com.education.entity.StudentGrade;
 import com.education.dto.StudentGradeDTO;
+import com.education.dto.GradeDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -13,7 +14,7 @@ import java.util.Date;
 @Mapper
 public interface GradeMapper {
     // 学生相关
-    List<Grade> findByStudentId(@Param("studentId") Long studentId, @Param("semester") String semester);
+    List<GradeDTO> findByStudentId(@Param("studentId") Long studentId, @Param("semester") String semester);
     
     // 教师相关
     List<StudentGradeDTO> findStudentsByCourseId(Long courseId);
@@ -57,4 +58,7 @@ public interface GradeMapper {
     Map<String, Integer> getGradeDistribution();
     Map<String, Double> getCoursePassRates();
     List<Map<String, Object>> findGradeAlerts();
+    
+    @Select("SELECT COUNT(*) FROM grade WHERE score < (SELECT threshold FROM grade_alert_settings LIMIT 1)")
+    int countGradeAlerts();
 } 
