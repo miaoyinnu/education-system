@@ -65,7 +65,7 @@
       width="500px"
     >
       <el-form
-        ref="courseForm"
+        ref="courseFormRef"
         :model="courseForm"
         :rules="rules"
         label-width="100px"
@@ -74,7 +74,7 @@
           <el-input v-model="courseForm.name" />
         </el-form-item>
         <el-form-item label="任课教师" prop="teacherId">
-          <el-select v-model="courseForm.teacherId" placeholder="请选择教师">
+          <el-select v-model="courseForm.teacherId" placeholder="请选择教师" clearable>
             <el-option
               v-for="teacher in teachers"
               :key="teacher.id"
@@ -83,11 +83,11 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="上课时间" prop="courseTime">
-          <el-input v-model="courseForm.courseTime" placeholder="如：周一 1-2节" />
+        <el-form-item label="上课时间" prop="time">
+          <el-input v-model="courseForm.time" placeholder="如：周一 1-2节" />
         </el-form-item>
         <el-form-item label="教室" prop="classroomId">
-          <el-select v-model="courseForm.classroomId" placeholder="请选择教室">
+          <el-select v-model="courseForm.classroomId" placeholder="请选择教室" clearable>
             <el-option
               v-for="classroom in classrooms"
               :key="classroom.id"
@@ -95,6 +95,9 @@
               :value="classroom.id"
             />
           </el-select>
+        </el-form-item>
+        <el-form-item label="学期" prop="semester">
+          <el-input v-model="courseForm.semester" placeholder="如：2024春季" />
         </el-form-item>
         <el-form-item label="最大人数" prop="maxStudents">
           <el-input-number v-model="courseForm.maxStudents" :min="1" />
@@ -114,7 +117,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '@/utils/request'
@@ -132,11 +135,13 @@ const searchQuery = ref('')
 // 对话框相关
 const dialogVisible = ref(false)
 const dialogType = ref('add')
+const courseFormRef = ref(null)
 const courseForm = ref({
   name: '',
   teacherId: '',
   courseTime: '',
   classroomId: '',
+  semester: '',
   maxStudents: 50,
   credit: 2
 })
@@ -145,8 +150,9 @@ const courseForm = ref({
 const rules = {
   name: [{ required: true, message: '请输入课程名称', trigger: 'blur' }],
   teacherId: [{ required: true, message: '请选择任课教师', trigger: 'change' }],
-  courseTime: [{ required: true, message: '请输入上课时间', trigger: 'blur' }],
+  time: [{ required: true, message: '请输入上课时间', trigger: 'blur' }],
   classroomId: [{ required: true, message: '请选择教室', trigger: 'change' }],
+  semester: [{ required: true, message: '请输入学期', trigger: 'blur' }],
   maxStudents: [{ required: true, message: '请输入最大人数', trigger: 'blur' }],
   credit: [{ required: true, message: '请输入学分', trigger: 'blur' }]
 }
@@ -181,7 +187,12 @@ const fetchCourses = async () => {
 const fetchTeachers = async () => {
   try {
     const res = await request.get('/admin/teachers')
-    teachers.value = Array.isArray(res) ? res : []
+    if (res.code === 200) {
+      teachers.value = res.data || []
+    } else {
+      teachers.value = []
+      ElMessage.error('获取教师列表失败')
+    }
   } catch (error) {
     console.error('获取教师列表失败:', error)
     ElMessage.error('获取教师列表失败')
@@ -192,7 +203,12 @@ const fetchTeachers = async () => {
 const fetchClassrooms = async () => {
   try {
     const res = await request.get('/admin/classrooms')
-    classrooms.value = Array.isArray(res) ? res : []
+    if (res.code === 200) {
+      classrooms.value = res.data || []
+    } else {
+      classrooms.value = []
+      ElMessage.error('获取教室列表失败')
+    }
   } catch (error) {
     console.error('获取教室列表失败:', error)
     ElMessage.error('获取教室列表失败')
@@ -204,28 +220,49 @@ const handleAdd = () => {
   dialogType.value = 'add'
   courseForm.value = {
     name: '',
-    teacherId: '',
-    courseTime: '',
-    classroomId: '',
+    teacherId: null,
+    time: '',
+    classroomId: null,
+    semester: '',
     maxStudents: 50,
     credit: 2
   }
   dialogVisible.value = true
+  // 等待下一个 tick，确保表单已经渲染
+  nextTick(() => {
+    courseFormRef.value?.resetFields()
+  })
 }
 
 // 编辑课程
 const handleEdit = (row) => {
   dialogType.value = 'edit'
-  courseForm.value = { ...row }
+  courseForm.value = {
+    id: row.id,
+    name: row.name,
+    teacherId: row.teacherId,
+    time: row.courseTime,
+    classroomId: row.classroomId,
+    semester: row.semester,
+    maxStudents: row.maxStudents,
+    credit: row.credit
+  }
   dialogVisible.value = true
+  // 等待下一个 tick，确保表单已经渲染
+  nextTick(() => {
+    courseFormRef.value?.clearValidate()
+  })
 }
 
 // 删除课程
 const handleDelete = async (row) => {
   try {
-    await ElMessageBox.confirm('确定要删除该课程吗？', '提示', {
-      type: 'warning'
+    await ElMessageBox.confirm('确定要删除该课程吗？删除后无法恢复！', '警告', {
+      type: 'warning',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消'
     })
+    
     await request.delete(`/admin/courses/${row.id}`)
     ElMessage.success('删除成功')
     fetchCourses()
@@ -239,7 +276,11 @@ const handleDelete = async (row) => {
 
 // 提交表单
 const handleSubmit = async () => {
+  if (!courseFormRef.value) return
+
   try {
+    await courseFormRef.value.validate()
+    
     if (dialogType.value === 'add') {
       await request.post('/admin/courses', courseForm.value)
       ElMessage.success('添加成功')

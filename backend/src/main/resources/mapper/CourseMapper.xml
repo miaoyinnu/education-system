@@ -19,14 +19,32 @@
     </select>
 
     <insert id="insert" parameterType="com.education.dto.CourseDTO">
-        INSERT INTO course (name, teacher_id, max_students, credit, semester)
-        VALUES (#{name}, #{teacherId}, #{maxStudents}, #{credit}, #{semester})
+        INSERT INTO course (
+            name, 
+            teacher_id, 
+            course_time,
+            classroom_id,
+            max_students, 
+            credit, 
+            semester
+        )
+        VALUES (
+            #{name}, 
+            #{teacherId}, 
+            #{time},
+            #{classroomId},
+            #{maxStudents}, 
+            #{credit}, 
+            #{semester}
+        )
     </insert>
     
     <update id="update" parameterType="com.education.dto.CourseDTO">
         UPDATE course
         SET name = #{name},
             teacher_id = #{teacherId},
+            course_time = #{time},
+            classroom_id = #{classroomId},
             max_students = #{maxStudents},
             credit = #{credit},
             semester = #{semester}
@@ -205,7 +223,13 @@
     <!-- 分页查询课程 -->
     <select id="findByPage" resultMap="courseResultMap">
         SELECT
-        <include refid="Base_Column_List" />
+            c.id, c.name, 
+            c.teacher_id, t.name as teacher_name,
+            c.course_time,
+            c.classroom_id, cl.name as classroom_name,
+            c.max_students,
+            (SELECT COUNT(*) FROM course_selection cs WHERE cs.course_id = c.id) as current_students,
+            c.credit, c.semester
         FROM course c
         LEFT JOIN teacher t ON c.teacher_id = t.id
         LEFT JOIN classroom cl ON c.classroom_id = cl.id
@@ -236,6 +260,7 @@
         <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="teacherId" column="teacher_id"/>
+        <result property="teacherName" column="teacher_name"/>
         <result property="courseTime" column="course_time"/>
         <result property="classroomId" column="classroom_id"/>
         <result property="classroomName" column="classroom_name"/>

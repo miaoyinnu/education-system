@@ -11,6 +11,7 @@ public class Course {
     private Long classroomId;  // 教室ID
     private String classroomName;  // 教室名称
     private Long teacherId;  // 教师ID
+    private String teacherName;  // 教师姓名
     private Integer maxStudents;  // 最大学生数
     private Integer currentStudents;  // 当前学生数
     private Double credit;  // 学分
