@@ -1,6 +1,7 @@
 package com.education.controller;
 
 import com.education.dto.CourseDTO;
+import com.education.dto.GradeAlertDTO;
 import com.education.dto.GradeDTO;
 import com.education.dto.StudentStatsDTO;
 import com.education.service.StudentService;
@@ -50,5 +51,10 @@ public class StudentController {
     public ResponseEntity<StudentStatsDTO> getStats() {
         StudentStatsDTO stats = studentService.getStats();
         return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/grade-alerts")
+    public ResponseEntity<List<GradeAlertDTO>> getGradeAlerts() {
+        return ResponseEntity.ok(studentService.getGradeAlerts());
     }
 } 

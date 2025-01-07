@@ -38,7 +38,9 @@ public interface AdminService {
 
     // 成绩预警
     void setGradeAlertThreshold(GradeAlertSettingDTO settingDTO);
-    List<Map<String, Object>> getGradeAlerts();
+    GradeAlertSettingDTO getGradeAlertThreshold();
+    List<GradeAlertDTO> getGradeAlerts();
+    void sendGradeAlert(Long studentId, Long courseId);
 
     // 仪表盘相关
     List<Map<String, Object>> getTodoList();

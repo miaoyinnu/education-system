@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminAnalysisService {
@@ -103,20 +104,22 @@ public class AdminAnalysisService {
         return jdbcTemplate.query(
             "SELECT s.id as student_id, s.name as student_name, " +
             "c.id as course_id, c.name as course_name, " +
-            "g.score, c.semester " +
+            "t.name as teacher_name, " +
+            "g.score " +
             "FROM grade g " +
             "JOIN student s ON g.student_id = s.id " +
             "JOIN course c ON g.course_id = c.id " +
+            "JOIN teacher t ON c.teacher_id = t.id " +
             "WHERE g.score < ? " +
             "ORDER BY g.score ASC",
             (rs, rowNum) -> {
                 GradeAlertDTO alert = new GradeAlertDTO();
-                alert.setStudentId(String.valueOf(rs.getLong("student_id")));
+                alert.setStudentId(rs.getLong("student_id"));
                 alert.setStudentName(rs.getString("student_name"));
                 alert.setCourseId(rs.getLong("course_id"));
                 alert.setCourseName(rs.getString("course_name"));
-                alert.setScore(rs.getDouble("score"));
-                alert.setSemester(rs.getString("semester"));
+                alert.setTeacherName(rs.getString("teacher_name"));
+                alert.setScore((int) rs.getDouble("score"));
                 return alert;
             },
             threshold
@@ -139,5 +142,18 @@ public class AdminAnalysisService {
             sql,
             semester != null ? new Object[]{semester} : new Object[]{}
         );
+    }
+
+    private List<GradeAlertDTO> convertToGradeAlertDTOs(List<Map<String, Object>> alerts) {
+        return alerts.stream().map(alert -> {
+            GradeAlertDTO dto = new GradeAlertDTO();
+            dto.setStudentId(Long.parseLong(alert.get("student_id").toString()));
+            dto.setStudentName((String) alert.get("student_name"));
+            dto.setCourseId(Long.parseLong(alert.get("course_id").toString()));
+            dto.setCourseName((String) alert.get("course_name"));
+            dto.setTeacherName((String) alert.get("teacher_name"));
+            dto.setScore(((Number) alert.get("score")).intValue());
+            return dto;
+        }).collect(Collectors.toList());
     }
 } 

@@ -118,13 +118,18 @@
         SELECT s.name as student_name,
                c.name as course_name,
                g.score,
-               gas.threshold
+               t.name as teacher_name,
+               s.id as student_id,
+               c.id as course_id
         FROM grade g
         JOIN student s ON g.student_id = s.id
         JOIN course c ON g.course_id = c.id
-        JOIN grade_alert_settings gas ON g.course_id = gas.course_id
-        WHERE g.score &lt; gas.threshold
-        AND g.is_published = true
+        JOIN teacher t ON c.teacher_id = t.id
+        WHERE g.score &lt; (
+            SELECT CAST(value AS SIGNED)
+            FROM system_settings
+            WHERE `key` = 'grade_alert_threshold'
+        )
         ORDER BY g.score ASC
     </select>
 
@@ -142,7 +147,7 @@
             AVG(g.score) as avgScore,
             MAX(g.score) as maxScore,
             MIN(g.score) as minScore,
-            SUM(CASE WHEN g.score >= 60 THEN 1 ELSE 0 END) * 100.0 / COUNT(*) as passRate
+            SUM(CASE WHEN g.score &gt;= 60 THEN 1 ELSE 0 END) * 100.0 / COUNT(*) as passRate
         FROM course c
         LEFT JOIN grade g ON c.id = g.course_id
         GROUP BY c.id, c.name
@@ -154,9 +159,31 @@
             s.name as studentName,
             COUNT(g.score) as totalCourses,
             AVG(g.score) as avgScore,
-            SUM(CASE WHEN g.score >= 60 THEN 1 ELSE 0 END) as passedCourses
+            SUM(CASE WHEN g.score &gt;= 60 THEN 1 ELSE 0 END) as passedCourses
         FROM student s
         LEFT JOIN grade g ON s.id = g.student_id
         GROUP BY s.id, s.name
+    </select>
+
+    <select id="findGradeAlertsByStudentId" resultType="com.education.dto.GradeAlertDTO">
+        SELECT 
+            g.id,
+            c.name as courseName,
+            t.name as teacherName,
+            g.score,
+            c.id as courseId,
+            s.id as studentId,
+            s.name as studentName
+        FROM grade g
+        JOIN course c ON g.course_id = c.id
+        JOIN teacher t ON c.teacher_id = t.id
+        JOIN student s ON g.student_id = s.id
+        WHERE g.student_id = #{studentId}
+        AND g.score &lt; (
+            SELECT CAST(value AS SIGNED)
+            FROM system_settings
+            WHERE `key` = 'grade_alert_threshold'
+        )
+        ORDER BY g.score ASC
     </select>
 </mapper> 

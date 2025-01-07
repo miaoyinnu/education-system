@@ -1,12 +1,15 @@
 package com.education.mapper;
 
-import com.education.dto.SystemSettingsDTO;
+import com.education.entity.SystemSettings;
+import com.education.entity.SystemNotification;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
 public interface SystemSettingsMapper {
-    void updateSettings(SystemSettingsDTO settingsDTO);
-    List<SystemSettingsDTO> findAll();
-    SystemSettingsDTO findByKey(String key);
+    SystemSettings getByKey(@Param("key") String key);
+    void updateByKey(SystemSettings settings);
+    void insertNotification(SystemNotification notification);
+    List<SystemSettings> findAllSettings();
 } 

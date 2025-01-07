@@ -5,13 +5,13 @@ import com.education.dto.SystemSettingsDTO;
 import com.education.service.SystemSettingsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import javax.servlet.http.HttpServletResponse;
+
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/system/settings")
+@RequestMapping("/api/settings")
 public class SystemSettingsController {
-
+    
     @Autowired
     private SystemSettingsService settingsService;
 
@@ -20,26 +20,24 @@ public class SystemSettingsController {
         return Result.success(settingsService.getSettings());
     }
 
+    @GetMapping("/{key}")
+    public Result<SystemSettingsDTO> getSettingByKey(@PathVariable String key) {
+        return Result.success(settingsService.getSettingByKey(key));
+    }
+
     @PutMapping
     public Result<SystemSettingsDTO> updateSettings(@RequestBody SystemSettingsDTO settingsDTO) {
         return Result.success(settingsService.updateSettings(settingsDTO));
     }
 
-    @PostMapping("/reset")
-    public Result<Void> resetToDefault() {
-        settingsService.resetToDefault();
-        return Result.success();
+    @GetMapping("/grade-alert/threshold")
+    public Result<Integer> getGradeAlertThreshold() {
+        return Result.success(settingsService.getGradeAlertThreshold());
     }
 
-    @PostMapping("/import")
-    public Result<Void> importSettings(@RequestBody String content) {
-        settingsService.importSettings(content);
-        return Result.success();
-    }
-
-    @GetMapping("/export")
-    public Result<Void> exportSettings(@RequestParam String format, HttpServletResponse response) {
-        settingsService.exportSettings(format);
+    @PutMapping("/grade-alert/threshold")
+    public Result<Void> updateGradeAlertThreshold(@RequestParam Integer threshold) {
+        settingsService.updateGradeAlertThreshold(threshold);
         return Result.success();
     }
 } 

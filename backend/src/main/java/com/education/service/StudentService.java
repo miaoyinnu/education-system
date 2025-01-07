@@ -2,6 +2,7 @@ package com.education.service;
 
 import com.education.dto.CourseDTO;
 import com.education.dto.GradeDTO;
+import com.education.dto.GradeAlertDTO;
 import com.education.dto.StudentStatsDTO;
 import com.education.entity.Course;
 import com.education.entity.Grade;
@@ -152,5 +153,15 @@ public class StudentService {
         stats.setAverageScore(averageScore);
         
         return stats;
+    }
+
+    public List<GradeAlertDTO> getGradeAlerts() {
+        String username = UserContext.getCurrentUsername();
+        Long studentId = UserIdCache.getStudentIdByUsername(username);
+        if (studentId == null) {
+            throw new BusinessException("学生信息不存在");
+        }
+        
+        return gradeMapper.findGradeAlertsByStudentId(studentId);
     }
 } 

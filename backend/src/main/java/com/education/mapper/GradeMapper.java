@@ -4,6 +4,7 @@ import com.education.entity.Grade;
 import com.education.entity.StudentGrade;
 import com.education.dto.StudentGradeDTO;
 import com.education.dto.GradeDTO;
+import com.education.dto.GradeAlertDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -70,4 +71,8 @@ public interface GradeMapper {
     List<Map<String, Object>> getCourseStatistics();
     Map<String, Integer> getGradeDistribution();
     List<Map<String, Object>> getStudentStatistics();
+
+    List<GradeAlertDTO> findGradeAlerts(@Param("threshold") Integer threshold);
+
+    List<GradeAlertDTO> findGradeAlertsByStudentId(@Param("studentId") Long studentId);
 } 

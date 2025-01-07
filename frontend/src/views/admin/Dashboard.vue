@@ -36,6 +36,14 @@
         </el-card>
       </el-col>
       <el-col :span="6">
+        <el-card shadow="hover" @click="navigateTo('/admin/grade-alerts')">
+          <div class="action-card">
+            <el-icon size="24"><Warning /></el-icon>
+            <span>成绩异常提醒</span>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="6">
         <el-card shadow="hover" @click="handleLogout">
           <div class="action-card">
             <el-icon size="24"><SwitchButton /></el-icon>
@@ -98,7 +106,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { Document, School, TrendCharts, SwitchButton } from '@element-plus/icons-vue'
+import { Document, School, TrendCharts, SwitchButton, Warning } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus'
 import request from '@/utils/request'
 

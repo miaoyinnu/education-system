@@ -73,43 +73,16 @@ CREATE TABLE grade (
 );
 
 -- 系统设置表
-CREATE TABLE system_settings (
+CREATE TABLE IF NOT EXISTS system_settings (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    setting_key VARCHAR(50) NOT NULL UNIQUE,
-    setting_value VARCHAR(500) NOT NULL,
-    description VARCHAR(200),
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    `key` VARCHAR(50) NOT NULL UNIQUE,
+    value TEXT NOT NULL,
+    description VARCHAR(255)
 );
 
--- 系统日志表
-CREATE TABLE system_log (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    user_id BIGINT,
-    operation VARCHAR(100) NOT NULL,
-    description TEXT,
-    ip_address VARCHAR(50),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES user(id)
-);
+-- 初始化系统设置
+INSERT INTO system_settings (`key`, value, description) VALUES
+('grade_alert_threshold', '60', '成绩预警阈值'),
+('max_course_selection', '5', '学生最大选课数量'),
+('course_selection_enable', 'true', '是否开启选课功能');
 
--- 成绩预警设置表
-CREATE TABLE grade_alert_settings (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    course_id BIGINT,
-    alert_threshold DECIMAL(5,2) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (course_id) REFERENCES course(id)
-);
-
--- 成绩预警记录表
-CREATE TABLE grade_alerts (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    student_id BIGINT NOT NULL,
-    course_id BIGINT NOT NULL,
-    score DECIMAL(5,2) NOT NULL,
-    threshold DECIMAL(5,2) NOT NULL,
-    is_processed BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (student_id) REFERENCES student(id),
-    FOREIGN KEY (course_id) REFERENCES course(id)
-); 

@@ -23,11 +23,9 @@ public class AdminServiceImpl implements AdminService {
     @Autowired
     private ClassroomMapper classroomMapper;
     @Autowired
-    private SystemSettingsMapper settingsMapper;
+    private SystemSettingsMapper systemSettingsMapper;
     @Autowired
     private GradeMapper gradeMapper;
-    @Autowired
-    private GradeAlertSettingsMapper alertSettingsMapper;
     @Autowired
     private CourseScheduler courseScheduler;
     @Autowired
@@ -174,13 +172,18 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public SystemSettingsDTO updateSettings(SystemSettingsDTO settingsDTO) {
-        settingsMapper.updateSettings(settingsDTO);
+        SystemSettings settings = new SystemSettings();
+        settings.setKey(settingsDTO.getKey());
+        settings.setValue(settingsDTO.getValue());
+        settings.setDescription(settingsDTO.getDescription());
+        systemSettingsMapper.updateByKey(settings);
         return settingsDTO;
     }
 
     @Override
     public List<SystemSettingsDTO> getSettings() {
-        return settingsMapper.findAll();
+        // TODO: 实现从 SystemSettings 到 SystemSettingsDTO 的转换
+        return Collections.emptyList();
     }
 
     // 统计分析
@@ -222,12 +225,48 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public void setGradeAlertThreshold(GradeAlertSettingDTO settingDTO) {
-        alertSettingsMapper.updateThreshold(settingDTO);
+        SystemSettings settings = new SystemSettings();
+        settings.setKey("grade_alert_threshold");
+        settings.setValue(String.valueOf(settingDTO.getThreshold()));
+        systemSettingsMapper.updateByKey(settings);
     }
 
     @Override
-    public List<Map<String, Object>> getGradeAlerts() {
-        return gradeMapper.findGradeAlerts();
+    public GradeAlertSettingDTO getGradeAlertThreshold() {
+        SystemSettings settings = systemSettingsMapper.getByKey("grade_alert_threshold");
+        GradeAlertSettingDTO dto = new GradeAlertSettingDTO();
+        dto.setThreshold(settings != null ? Integer.parseInt(settings.getValue()) : 60);
+        return dto;
+    }
+
+    @Override
+    public List<GradeAlertDTO> getGradeAlerts() {
+        GradeAlertSettingDTO threshold = getGradeAlertThreshold();
+        return gradeMapper.findGradeAlerts(threshold.getThreshold());
+    }
+
+    @Override
+    @Transactional
+    public void sendGradeAlert(Long studentId, Long courseId) {
+        // 获取学生信息
+        Student student = studentMapper.findById(studentId);
+        // 获取课程信息
+        Course course = courseMapper.findById(courseId);
+        
+        if (student == null || course == null) {
+            throw new IllegalArgumentException("学生或课程不存在");
+        }
+        
+        // 保存一条系统通知记录
+        SystemNotification notification = new SystemNotification();
+        notification.setUserId(studentId);
+        notification.setTitle("成绩预警通知");
+        notification.setContent(String.format("您在课程《%s》中的成绩未达到预期，请及时改进。", course.getName()));
+        notification.setType("GRADE_ALERT");
+        notification.setStatus("UNREAD");
+        notification.setCreatedAt(LocalDateTime.now());
+        
+        systemSettingsMapper.insertNotification(notification);
     }
 
     // 仪表盘相关

@@ -4,6 +4,5 @@ import lombok.Data;
 
 @Data
 public class GradeAlertSettingDTO {
-    private Long courseId;
-    private Double alertThreshold;
+    private Integer threshold;  // 预警分数线
 } 

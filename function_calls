@@ -1,0 +1,23 @@
+<invoke name="edit_file">
+<parameter name="target_file">frontend/src/router/modules/admin.js</parameter>
+<parameter name="instructions">添加成绩预警路由配置</parameter>
+<parameter name="code_edit">
+import { AdminLayout } from '@/views/admin'
+
+export default {
+  path: '/admin',
+  component: AdminLayout,
+  children: [
+    // ... 其他已有路由
+    {
+      path: 'grade-alerts',
+      name: 'AdminGradeAlerts',
+      component: () => import('@/views/admin/GradeAlerts.vue'),
+      meta: {
+        title: '成绩预警',
+        requiresAuth: true,
+        roles: ['admin']
+      }
+    }
+  ]
+} 

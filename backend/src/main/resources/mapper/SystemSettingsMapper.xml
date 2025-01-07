@@ -3,33 +3,31 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.education.mapper.SystemSettingsMapper">
     
-    <update id="updateSettings" parameterType="com.education.dto.SystemSettingsDTO">
-        UPDATE system_settings 
-        SET setting_value = #{settingValue},
-            description = #{description},
-            updated_at = CURRENT_TIMESTAMP
-        WHERE setting_key = #{settingKey}
+    <select id="findAllSettings" resultType="com.education.entity.SystemSettings">
+        SELECT id, `key`, value, description
+        FROM system_settings
+    </select>
+    
+    <select id="getByKey" resultType="com.education.entity.SystemSettings">
+        SELECT id, `key`, value, description
+        FROM system_settings
+        WHERE `key` = #{key}
+    </select>
+    
+    <update id="updateByKey" parameterType="com.education.entity.SystemSettings">
+        INSERT INTO system_settings (`key`, value, description)
+        VALUES (#{key}, #{value}, #{description})
+        ON DUPLICATE KEY UPDATE
+        value = #{value},
+        description = #{description}
     </update>
     
-    <select id="findAll" resultType="com.education.dto.SystemSettingsDTO">
-        SELECT 
-            setting_key as settingKey,
-            setting_value as settingValue,
-            description,
-            created_at as createdAt,
-            updated_at as updatedAt
-        FROM system_settings
-    </select>
-    
-    <select id="findByKey" resultType="com.education.dto.SystemSettingsDTO">
-        SELECT 
-            setting_key as settingKey,
-            setting_value as settingValue,
-            description,
-            created_at as createdAt,
-            updated_at as updatedAt
-        FROM system_settings
-        WHERE setting_key = #{key}
-    </select>
+    <insert id="insertNotification" parameterType="com.education.entity.SystemNotification">
+        INSERT INTO system_notifications (
+            user_id, title, content, type, status, created_at
+        ) VALUES (
+            #{userId}, #{title}, #{content}, #{type}, #{status}, NOW()
+        )
+    </insert>
     
 </mapper> 

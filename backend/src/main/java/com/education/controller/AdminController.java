@@ -5,6 +5,7 @@ import com.education.entity.User;
 import com.education.service.AdminService;
 import com.education.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -118,15 +119,15 @@ public class AdminController {
     }
 
     // 成绩预警
-    @PutMapping("/grade-alert")
-    public Result<Void> setGradeAlertThreshold(@RequestBody GradeAlertSettingDTO settingDTO) {
-        adminService.setGradeAlertThreshold(settingDTO);
-        return Result.success();
+    @GetMapping("/grade-alerts")
+    public Result<List<GradeAlertDTO>> getGradeAlerts() {
+        return Result.success(adminService.getGradeAlerts());
     }
 
-    @GetMapping("/grade-alert")
-    public Result<List<Map<String, Object>>> getGradeAlerts() {
-        return Result.success(adminService.getGradeAlerts());
+    @PostMapping("/grade-alerts/notify")
+    public Result<Void> sendGradeAlert(@RequestBody Map<String, Long> params) {
+        adminService.sendGradeAlert(params.get("studentId"), params.get("courseId"));
+        return Result.success();
     }
 
     // 仪表盘相关

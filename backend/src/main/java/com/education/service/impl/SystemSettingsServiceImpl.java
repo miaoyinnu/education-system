@@ -1,90 +1,69 @@
 package com.education.service.impl;
 
 import com.education.dto.SystemSettingsDTO;
+import com.education.entity.SystemSettings;
 import com.education.mapper.SystemSettingsMapper;
 import com.education.service.SystemSettingsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class SystemSettingsServiceImpl implements SystemSettingsService {
 
     @Autowired
-    private SystemSettingsMapper settingsMapper;
-    
-    @Autowired
-    private ObjectMapper objectMapper;
+    private SystemSettingsMapper systemSettingsMapper;
 
     @Override
     @Transactional
     public SystemSettingsDTO updateSettings(SystemSettingsDTO settingsDTO) {
-        settingsMapper.updateSettings(settingsDTO);
+        SystemSettings settings = new SystemSettings();
+        settings.setKey(settingsDTO.getKey());
+        settings.setValue(settingsDTO.getValue());
+        settings.setDescription(settingsDTO.getDescription());
+        systemSettingsMapper.updateByKey(settings);
         return settingsDTO;
     }
 
     @Override
     public List<SystemSettingsDTO> getSettings() {
-        return settingsMapper.findAll();
+        List<SystemSettings> settings = systemSettingsMapper.findAllSettings();
+        return settings.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
     public SystemSettingsDTO getSettingByKey(String key) {
-        return settingsMapper.findByKey(key);
+        SystemSettings settings = systemSettingsMapper.getByKey(key);
+        return settings != null ? convertToDTO(settings) : null;
     }
 
     @Override
     @Transactional
-    public void resetToDefault() {
-        // 定义默认设置
-        Map<String, String> defaultSettings = new HashMap<>();
-        defaultSettings.put("grade_alert_threshold", "60");
-        defaultSettings.put("max_course_selection", "5");
-        defaultSettings.put("course_selection_enabled", "true");
-        
-        // 更新每个设置到默认值
-        defaultSettings.forEach((key, value) -> {
-            SystemSettingsDTO setting = new SystemSettingsDTO();
-            setting.setSettingKey(key);
-            setting.setSettingValue(value);
-            setting.setDescription("Default setting");
-            settingsMapper.updateSettings(setting);
-        });
+    public void updateGradeAlertThreshold(Integer threshold) {
+        SystemSettings settings = new SystemSettings();
+        settings.setKey("grade_alert_threshold");
+        settings.setValue(String.valueOf(threshold));
+        settings.setDescription("成绩预警阈值");
+        systemSettingsMapper.updateByKey(settings);
     }
 
     @Override
-    @Transactional
-    public void importSettings(String filePath) {
-        try {
-            // 从JSON文件读取设置
-            List<SystemSettingsDTO> settings = objectMapper.readValue(
-                new File(filePath),
-                objectMapper.getTypeFactory().constructCollectionType(List.class, SystemSettingsDTO.class)
-            );
-            
-            // 更新每个设置
-            for (SystemSettingsDTO setting : settings) {
-                settingsMapper.updateSettings(setting);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to import settings: " + e.getMessage(), e);
-        }
+    public Integer getGradeAlertThreshold() {
+        SystemSettings settings = systemSettingsMapper.getByKey("grade_alert_threshold");
+        return settings != null ? Integer.parseInt(settings.getValue()) : 60;
     }
 
-    @Override
-    public void exportSettings(String filePath) {
-        try {
-            // 获取所有设置
-            List<SystemSettingsDTO> settings = settingsMapper.findAll();
-            
-            // 写入JSON文件
-            objectMapper.writeValue(new File(filePath), settings);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to export settings: " + e.getMessage(), e);
-        }
+    private SystemSettingsDTO convertToDTO(SystemSettings settings) {
+        SystemSettingsDTO dto = new SystemSettingsDTO();
+        dto.setKey(settings.getKey());
+        dto.setValue(settings.getValue());
+        dto.setDescription(settings.getDescription());
+        return dto;
     }
 } 

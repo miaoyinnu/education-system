@@ -39,6 +39,24 @@
       </el-col>
     </el-row>
 
+    <!-- 成绩预警表格 -->
+    <el-card class="mt-4">
+      <template #header>
+        <div class="card-header">
+          <span>成绩预警</span>
+        </div>
+      </template>
+      <el-table :data="gradeAlerts" stripe>
+        <el-table-column prop="courseName" label="课程名称" />
+        <el-table-column prop="teacherName" label="任课教师" />
+        <el-table-column prop="score" label="成绩">
+          <template #default="scope">
+            <span style="color: #f56c6c">{{ scope.row.score }}</span>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
+
     <el-card class="recent-courses" style="margin-top: 20px;">
       <template #header>
         <div class="card-header">
@@ -68,6 +86,7 @@ const stats = ref({
 
 const courses = ref([])
 const loading = ref(true)
+const gradeAlerts = ref([])
 
 const fetchStats = async () => {
   try {
@@ -97,8 +116,19 @@ const fetchCourses = async () => {
   }
 }
 
+const fetchGradeAlerts = async () => {
+  try {
+    const res = await request.get('/student/grade-alerts')
+    console.log('成绩预警数据:', res)
+    gradeAlerts.value = Array.isArray(res) ? res : []
+  } catch (error) {
+    console.error('获取成绩预警信息失败:', error)
+    ElMessage.error('获取成绩预警信息失败')
+  }
+}
+
 onMounted(async () => {
-  await Promise.all([fetchStats(), fetchCourses()])
+  await Promise.all([fetchStats(), fetchCourses(), fetchGradeAlerts()])
 })
 </script>
 
@@ -130,5 +160,9 @@ onMounted(async () => {
 
 .recent-courses {
   margin-top: 20px;
+}
+
+.mt-4 {
+  margin-top: 16px;
 }
 </style> 
