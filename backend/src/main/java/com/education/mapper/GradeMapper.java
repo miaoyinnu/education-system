@@ -55,10 +55,19 @@ public interface GradeMapper {
     List<Map<String, Object>> getRecentAlerts();
 
     List<Map<String, Object>> getCourseAverageGrades();
-    Map<String, Integer> getGradeDistribution();
     Map<String, Double> getCoursePassRates();
     List<Map<String, Object>> findGradeAlerts();
     
     @Select("SELECT COUNT(*) FROM grade WHERE score < (SELECT threshold FROM grade_alert_settings LIMIT 1)")
     int countGradeAlerts();
+
+    // 基础操作
+    void insert(@Param("studentId") Long studentId, @Param("courseId") Long courseId, @Param("score") Integer score);
+    void update(@Param("studentId") Long studentId, @Param("courseId") Long courseId, @Param("score") Integer score);
+    Integer findScore(@Param("studentId") Long studentId, @Param("courseId") Long courseId);
+    
+    // 统计分析
+    List<Map<String, Object>> getCourseStatistics();
+    Map<String, Integer> getGradeDistribution();
+    List<Map<String, Object>> getStudentStatistics();
 } 

@@ -26,6 +26,10 @@
           <el-icon><UserFilled /></el-icon>
           <span>用户管理</span>
         </el-menu-item>
+        <el-menu-item index="/admin/analysis">
+          <el-icon><TrendCharts /></el-icon>
+          <span>统计分析</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
     <el-container>
@@ -46,7 +50,7 @@
 </template>
 
 <script setup>
-import { DataLine, Reading, User, School, UserFilled } from '@element-plus/icons-vue'
+import { DataLine, Reading, User, School, UserFilled, TrendCharts } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'

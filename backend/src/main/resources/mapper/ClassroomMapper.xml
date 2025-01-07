@@ -85,4 +85,31 @@
         LEFT JOIN course_schedule cs ON c.id = cs.classroom_id
         GROUP BY c.id, c.name
     </select>
+
+    <!-- 统计分析 -->
+    <select id="getUsageStatistics" resultType="java.util.Map">
+        SELECT 
+            cl.id as classroomId,
+            cl.name as classroomName,
+            COUNT(c.id) as totalCourses,
+            COUNT(DISTINCT c.course_time) as usedTimeSlots,
+            (COUNT(DISTINCT c.course_time) * 100.0 / 
+                (SELECT COUNT(DISTINCT course_time) FROM course)) as usageRate
+        FROM classroom cl
+        LEFT JOIN course c ON cl.id = c.classroom_id
+        GROUP BY cl.id, cl.name
+    </select>
+
+    <select id="getCapacityStatistics" resultType="java.util.Map">
+        SELECT 
+            cl.id as classroomId,
+            cl.name as classroomName,
+            cl.capacity as totalCapacity,
+            AVG(c.current_students) as avgStudents,
+            MAX(c.current_students) as maxStudents,
+            (AVG(c.current_students) * 100.0 / cl.capacity) as utilizationRate
+        FROM classroom cl
+        LEFT JOIN course c ON cl.id = c.classroom_id
+        GROUP BY cl.id, cl.name, cl.capacity
+    </select>
 </mapper> 

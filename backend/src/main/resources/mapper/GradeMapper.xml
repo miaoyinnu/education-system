@@ -14,7 +14,7 @@
         JOIN course c ON g.course_id = c.id
         JOIN teacher t ON c.teacher_id = t.id
         WHERE g.student_id = #{studentId}
-        <if test="semester != null and semester != ''">
+        <if test="semester != null">
             AND c.semester = #{semester}
         </if>
         ORDER BY c.semester DESC, c.name ASC
@@ -126,5 +126,37 @@
         WHERE g.score &lt; gas.threshold
         AND g.is_published = true
         ORDER BY g.score ASC
+    </select>
+
+    <select id="findScore" resultType="java.lang.Integer">
+        SELECT score
+        FROM grade
+        WHERE student_id = #{studentId} AND course_id = #{courseId}
+    </select>
+
+    <select id="getCourseStatistics" resultType="java.util.Map">
+        SELECT 
+            c.id as courseId,
+            c.name as courseName,
+            COUNT(g.score) as totalStudents,
+            AVG(g.score) as avgScore,
+            MAX(g.score) as maxScore,
+            MIN(g.score) as minScore,
+            SUM(CASE WHEN g.score >= 60 THEN 1 ELSE 0 END) * 100.0 / COUNT(*) as passRate
+        FROM course c
+        LEFT JOIN grade g ON c.id = g.course_id
+        GROUP BY c.id, c.name
+    </select>
+
+    <select id="getStudentStatistics" resultType="java.util.Map">
+        SELECT 
+            s.id as studentId,
+            s.name as studentName,
+            COUNT(g.score) as totalCourses,
+            AVG(g.score) as avgScore,
+            SUM(CASE WHEN g.score >= 60 THEN 1 ELSE 0 END) as passedCourses
+        FROM student s
+        LEFT JOIN grade g ON s.id = g.student_id
+        GROUP BY s.id, s.name
     </select>
 </mapper> 

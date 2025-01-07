@@ -188,17 +188,17 @@ public class AdminServiceImpl implements AdminService {
     public Map<String, Object> getGradeStatistics() {
         Map<String, Object> stats = new HashMap<>();
         
-        // 获取所有课程的平均分
-        List<Map<String, Object>> courseAvgGrades = gradeMapper.getCourseAverageGrades();
-        stats.put("courseAverages", courseAvgGrades);
+        // 获取所有课程的平均分、最高分、最低分、及格率
+        List<Map<String, Object>> courseStats = gradeMapper.getCourseStatistics();
+        stats.put("courseStats", courseStats);
         
         // 获取成绩分布
         Map<String, Integer> gradeDistribution = gradeMapper.getGradeDistribution();
         stats.put("gradeDistribution", gradeDistribution);
         
-        // 获取及格率
-        Map<String, Double> passRates = gradeMapper.getCoursePassRates();
-        stats.put("passRates", passRates);
+        // 获取学生成绩统计
+        List<Map<String, Object>> studentStats = gradeMapper.getStudentStatistics();
+        stats.put("studentStats", studentStats);
         
         return stats;
     }
@@ -208,12 +208,12 @@ public class AdminServiceImpl implements AdminService {
         Map<String, Object> stats = new HashMap<>();
         
         // 获取教室使用率
-        Map<String, Double> usageRates = classroomMapper.getUsageRates();
-        stats.put("usageRates", usageRates);
+        List<Map<String, Object>> usageStats = classroomMapper.getUsageStatistics();
+        stats.put("usageStats", usageStats);
         
         // 获取教室容量利用率
-        Map<String, Double> capacityUtilization = classroomMapper.getCapacityUtilization();
-        stats.put("capacityUtilization", capacityUtilization);
+        List<Map<String, Object>> capacityStats = classroomMapper.getCapacityStatistics();
+        stats.put("capacityStats", capacityStats);
         
         return stats;
     }
