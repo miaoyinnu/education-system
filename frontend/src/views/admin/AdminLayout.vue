@@ -30,10 +30,7 @@
           <el-icon><TrendCharts /></el-icon>
           <span>统计分析</span>
         </el-menu-item>
-        <el-menu-item index="/admin/grade-alerts">
-          <el-icon><Warning /></el-icon>
-          <span>成绩异常提醒</span>
-        </el-menu-item>
+
       </el-menu>
     </el-aside>
     <el-container>

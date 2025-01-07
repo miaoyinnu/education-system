@@ -5,7 +5,6 @@ import Teachers from '@/views/admin/Teachers.vue'
 import Classrooms from '@/views/admin/Classrooms.vue'
 import Users from '@/views/admin/Users.vue'
 import Analysis from '@/views/admin/Analysis.vue'
-import GradeAlerts from '@/views/admin/GradeAlerts.vue'
 
 const adminRoutes = {
   path: '/admin',
@@ -46,12 +45,6 @@ const adminRoutes = {
       name: 'AdminAnalysis',
       component: Analysis,
       meta: { title: '统计分析' }
-    },
-    {
-      path: 'grade-alerts',
-      component: GradeAlerts,
-      name: 'GradeAlerts',
-      meta: { title: '成绩异常提醒' }
     }
   ]
 }
