@@ -27,4 +27,52 @@
         FROM user
         WHERE id = #{id}
     </select>
+
+    <!-- 用户管理 -->
+    <select id="findByPage" resultType="com.education.entity.User">
+        SELECT id, username, role, created_at as createdAt
+        FROM user
+        <where>
+            <if test="search != null and search != ''">
+                AND username LIKE CONCAT('%', #{search}, '%')
+            </if>
+        </where>
+        ORDER BY id DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*)
+        FROM user
+        <where>
+            <if test="search != null and search != ''">
+                AND username LIKE CONCAT('%', #{search}, '%')
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="com.education.entity.User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user (username, password, role, created_at)
+        VALUES (#{username}, #{password}, #{role}, NOW())
+    </insert>
+
+    <update id="update" parameterType="com.education.entity.User">
+        UPDATE user
+        SET username = #{username},
+            <if test="password != null and password != ''">
+                password = #{password},
+            </if>
+            role = #{role}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM user WHERE id = #{id}
+    </delete>
+
+    <select id="existsByUsername" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM user
+        WHERE username = #{username}
+    </select>
 </mapper> 

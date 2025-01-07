@@ -1,6 +1,8 @@
 package com.education.service;
 
 import com.education.dto.*;
+import com.education.entity.User;
+
 import java.util.List;
 import java.util.Map;
 
@@ -41,4 +43,10 @@ public interface AdminService {
     // 仪表盘相关
     List<Map<String, Object>> getTodoList();
     Map<String, Object> getSystemStatus();
+
+    // 用户管理
+    Map<String, Object> getUsers(int page, int size, String search);
+    User addUser(User user);
+    User updateUser(User user);
+    void deleteUser(Long id);
 } 

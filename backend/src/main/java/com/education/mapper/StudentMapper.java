@@ -2,6 +2,7 @@ package com.education.mapper;
 
 import com.education.entity.Student;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import java.util.List;
 import java.util.Map;
@@ -9,7 +10,7 @@ import java.util.Map;
 @Mapper
 public interface StudentMapper {
     @Select("SELECT * FROM student WHERE id = #{id}")
-    Student findById(Long id);
+    Student findById(@Param("id") Long id);
 
     @Select("SELECT * FROM student")
     List<Student> findAll();
@@ -25,4 +26,7 @@ public interface StudentMapper {
 
     @Select("SELECT COUNT(*) FROM grade WHERE student_id = #{studentId} AND score >= 60")
     int countPassedCourses(Long studentId);
+
+    void insert(Student student);
+    void deleteByUserId(@Param("userId") Long userId);
 } 

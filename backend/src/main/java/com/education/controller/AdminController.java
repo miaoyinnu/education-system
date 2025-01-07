@@ -1,6 +1,7 @@
 package com.education.controller;
 
 import com.education.common.Result;
+import com.education.entity.User;
 import com.education.service.AdminService;
 import com.education.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,5 +138,32 @@ public class AdminController {
     @GetMapping("/system-status")
     public Result<Map<String, Object>> getSystemStatus() {
         return Result.success(adminService.getSystemStatus());
+    }
+
+    // 用户管理
+    @GetMapping("/users")
+    public Result<Map<String, Object>> getUsers(
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String search
+    ) {
+        return Result.success(adminService.getUsers(page, size, search));
+    }
+
+    @PostMapping("/users")
+    public Result<User> addUser(@RequestBody User user) {
+        return Result.success(adminService.addUser(user));
+    }
+
+    @PutMapping("/users/{id}")
+    public Result<User> updateUser(@PathVariable Long id, @RequestBody User user) {
+        user.setId(id);
+        return Result.success(adminService.updateUser(user));
+    }
+
+    @DeleteMapping("/users/{id}")
+    public Result<Void> deleteUser(@PathVariable Long id) {
+        adminService.deleteUser(id);
+        return Result.success();
     }
 } 

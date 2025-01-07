@@ -1,52 +1,43 @@
-import Layout from '@/layout/index.vue'
+import AdminLayout from '@/views/admin/AdminLayout.vue'
+import Dashboard from '@/views/admin/Dashboard.vue'
+import Courses from '@/views/admin/Courses.vue'
+import Teachers from '@/views/admin/Teachers.vue'
+import Classrooms from '@/views/admin/Classrooms.vue'
+import Users from '@/views/admin/Users.vue'
 
 const adminRoutes = {
   path: '/admin',
-  component: Layout,
-  redirect: '/admin/dashboard',
-  name: 'Admin',
-  meta: {
-    title: '管理员',
-    icon: 'el-icon-s-tools',
-    role: 'ADMIN',
-    requiresAuth: true
-  },
+  component: AdminLayout,
   children: [
     {
       path: 'dashboard',
-      component: () => import('@/views/admin/Dashboard.vue'),
       name: 'AdminDashboard',
-      meta: { title: '首页', icon: 'el-icon-menu', role: 'ADMIN' }
+      component: Dashboard,
+      meta: { title: '控制台' }
     },
     {
       path: 'courses',
-      component: () => import('@/views/admin/Courses.vue'),
       name: 'AdminCourses',
-      meta: { title: '课程管理', icon: 'el-icon-reading', role: 'ADMIN' }
+      component: Courses,
+      meta: { title: '课程管理' }
     },
     {
       path: 'teachers',
-      component: () => import('@/views/admin/Teachers.vue'),
       name: 'AdminTeachers',
-      meta: { title: '教师管理', icon: 'el-icon-user', role: 'ADMIN' }
+      component: Teachers,
+      meta: { title: '教师管理' }
     },
     {
       path: 'classrooms',
-      component: () => import('@/views/admin/Classrooms.vue'),
       name: 'AdminClassrooms',
-      meta: { title: '教室管理', icon: 'el-icon-school', role: 'ADMIN' }
+      component: Classrooms,
+      meta: { title: '教室管理' }
     },
     {
-      path: 'statistics',
-      component: () => import('@/views/admin/Statistics.vue'),
-      name: 'AdminStatistics',
-      meta: { title: '统计分析', icon: 'el-icon-data-analysis', role: 'ADMIN' }
-    },
-    {
-      path: 'settings',
-      component: () => import('@/views/admin/Settings.vue'),
-      name: 'AdminSettings',
-      meta: { title: '系统设置', icon: 'el-icon-setting', role: 'ADMIN' }
+      path: 'users',
+      name: 'AdminUsers',
+      component: Users,
+      meta: { title: '用户管理' }
     }
   ]
 }

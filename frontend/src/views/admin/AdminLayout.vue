@@ -22,6 +22,10 @@
           <el-icon><School /></el-icon>
           <span>教室管理</span>
         </el-menu-item>
+        <el-menu-item index="/admin/users">
+          <el-icon><UserFilled /></el-icon>
+          <span>用户管理</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
     <el-container>
@@ -42,25 +46,18 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useStore } from 'vuex'
+import { DataLine, Reading, User, School, UserFilled } from '@element-plus/icons-vue'
+import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
-import { ElMessageBox } from 'element-plus'
-import { DataLine, Reading, User, School } from '@element-plus/icons-vue'
+import { storeToRefs } from 'pinia'
 
-const store = useStore()
+const userStore = useUserStore()
 const router = useRouter()
-const userInfo = computed(() => store.state.userInfo)
+const { info: userInfo } = storeToRefs(userStore)
 
-const handleLogout = () => {
-  ElMessageBox.confirm('确定要退出登录吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(() => {
-    store.commit('logout')
-    router.push('/login')
-  })
+const handleLogout = async () => {
+  await userStore.logout()
+  router.push('/login')
 }
 </script>
 
@@ -78,40 +75,13 @@ const handleLogout = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
-  border-bottom: 1px solid #eee;
+  height: 100%;
+  border-bottom: 1px solid #dcdfe6;
 }
 
 .user-info {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.el-header {
-  background-color: white;
-  padding: 0;
-}
-
-.el-aside {
-  background-color: #304156;
-}
-
-.el-menu {
-  background-color: transparent;
-  border-right: none;
-}
-
-.el-menu-item {
-  color: #bfcbd9;
-}
-
-.el-menu-item:hover {
-  color: #fff;
-}
-
-.el-menu-item.is-active {
-  color: #409eff;
-  background-color: #263445;
 }
 </style> 

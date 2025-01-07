@@ -59,13 +59,14 @@
         DELETE FROM teacher WHERE id = #{id}
     </delete>
 
+    <delete id="deleteByUserId">
+        DELETE FROM teacher WHERE user_id = #{userId}
+    </delete>
+
     <select id="hasOngoingCourses" resultType="boolean">
-        SELECT EXISTS (
-            SELECT 1 FROM course 
-            WHERE teacher_id = #{id} 
-            AND semester = (
-                SELECT value FROM system_config WHERE key = 'current_semester'
-            )
-        )
+        SELECT COUNT(*) > 0
+        FROM course
+        WHERE teacher_id = #{id}
+        AND semester = (SELECT value FROM system_settings WHERE name = 'current_semester')
     </select>
 </mapper> 

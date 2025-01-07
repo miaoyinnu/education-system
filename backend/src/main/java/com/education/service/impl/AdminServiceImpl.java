@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,8 @@ public class AdminServiceImpl implements AdminService {
     private CourseScheduler courseScheduler;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private StudentMapper studentMapper;
 
     // 课程管理
     @Override
@@ -304,5 +307,105 @@ public class AdminServiceImpl implements AdminService {
         if (classroom.getCapacity() <= 0) {
             throw new IllegalArgumentException("教室容量必须大于0");
         }
+    }
+
+    // 用户管理
+    @Override
+    public Map<String, Object> getUsers(int page, int size, String search) {
+        int offset = (page - 1) * size;
+        List<User> users = userMapper.findByPage(offset, size, search);
+        int total = userMapper.count(search);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("list", users);
+        result.put("total", total);
+        return result;
+    }
+
+    @Override
+    @Transactional
+    public User addUser(User user) {
+        // 检查用户名是否已存在
+        if (userMapper.existsByUsername(user.getUsername())) {
+            throw new IllegalArgumentException("用户名已存在");
+        }
+        
+        // 设置创建时间
+        user.setCreatedAt(LocalDateTime.now());
+        userMapper.insert(user);
+        
+        // 根据角色在对应表中创建记录
+        if ("STUDENT".equals(user.getRole())) {
+            Student student = new Student();
+            student.setUserId(user.getId());
+            student.setName(user.getUsername()); // 默认使用用户名作为学生姓名
+            studentMapper.insert(student);
+        } else if ("TEACHER".equals(user.getRole())) {
+            Teacher teacher = new Teacher();
+            teacher.setUserId(user.getId());
+            teacher.setName(user.getUsername()); // 默认使用用户名作为教师姓名
+            teacherMapper.insert(teacher);
+        }
+        
+        return user;
+    }
+
+    @Override
+    @Transactional
+    public User updateUser(User user) {
+        // 检查用户是否存在
+        User existingUser = userMapper.findById(user.getId());
+        if (existingUser == null) {
+            throw new IllegalArgumentException("用户不存在");
+        }
+        
+        // 如果修改了用户名，检查新用户名是否已存在
+        if (!existingUser.getUsername().equals(user.getUsername()) 
+            && userMapper.existsByUsername(user.getUsername())) {
+            throw new IllegalArgumentException("用户名已存在");
+        }
+        
+        // 如果角色发生变化，需要处理关联表
+        if (!existingUser.getRole().equals(user.getRole())) {
+            // 删除原有角色的关联记录
+            if ("STUDENT".equals(existingUser.getRole())) {
+                studentMapper.deleteByUserId(user.getId());
+            } else if ("TEACHER".equals(existingUser.getRole())) {
+                teacherMapper.deleteByUserId(user.getId());
+            }
+            
+            // 创建新角色的关联记录
+            if ("STUDENT".equals(user.getRole())) {
+                Student student = new Student();
+                student.setUserId(user.getId());
+                student.setName(user.getUsername());
+                studentMapper.insert(student);
+            } else if ("TEACHER".equals(user.getRole())) {
+                Teacher teacher = new Teacher();
+                teacher.setUserId(user.getId());
+                teacher.setName(user.getUsername());
+                teacherMapper.insert(teacher);
+            }
+        }
+        
+        userMapper.update(user);
+        return user;
+    }
+
+    @Override
+    @Transactional
+    public void deleteUser(Long id) {
+        // 检查用户是否存在
+        User user = userMapper.findById(id);
+        if (user == null) {
+            throw new IllegalArgumentException("用户不存在");
+        }
+        
+        // 检查用户是否有关联数据
+        if (user.getRole().equals("TEACHER") && teacherMapper.hasOngoingCourses(id)) {
+            throw new IllegalStateException("该用户是教师且有正在进行的课程，无法删除");
+        }
+        
+        userMapper.delete(id);
     }
 } 
