@@ -15,6 +15,7 @@ public class CourseScheduler {
     
     private Map<Long, Set<String>> teacherTimeSlots;  // 教师已占用的时间段
     private Map<Long, Set<String>> classroomTimeSlots;  // 教室已占用的时间段
+    private Set<String> occupiedTimeSlots;  // 所有已占用的时间段
     
     private static final String[] TIME_SLOTS = {
         "周一 1-2节", "周一 3-4节", "周一 5-6节", "周一 7-8节",
@@ -27,6 +28,7 @@ public class CourseScheduler {
     public CourseScheduler() {
         this.teacherTimeSlots = new HashMap<>();
         this.classroomTimeSlots = new HashMap<>();
+        this.occupiedTimeSlots = new HashSet<>();
     }
 
     public List<CourseDTO> schedule(List<CourseDTO> courses, List<TeacherDTO> teachers, List<ClassroomDTO> classrooms) {
@@ -36,6 +38,7 @@ public class CourseScheduler {
         // 初始化教师和教室的时间槽
         teacherTimeSlots.clear();
         classroomTimeSlots.clear();
+        occupiedTimeSlots.clear();
         
         // 检查是否有可用的教师和教室
         if (teachers.isEmpty() || classrooms.isEmpty()) {
@@ -43,15 +46,56 @@ public class CourseScheduler {
             return new ArrayList<>();
         }
         
-        for (TeacherDTO teacher : teachers) {
-            teacherTimeSlots.put(teacher.getId(), new HashSet<>());
-        }
-        for (ClassroomDTO classroom : classrooms) {
-            classroomTimeSlots.put(classroom.getId(), new HashSet<>());
+        // 为每个教师和教室初始化时间槽集合
+        teachers.forEach(teacher -> 
+            teacherTimeSlots.put(teacher.getId(), new HashSet<>()));
+        classrooms.forEach(classroom -> 
+            classroomTimeSlots.put(classroom.getId(), new HashSet<>()));
+
+        // 初始化已排课程的时间槽
+        logger.debug("初始化已排课程时间槽：");
+        for (CourseDTO course : courses) {
+            if (course.getTime() != null && course.getTeacherId() != null && course.getClassroomId() != null) {
+                logger.debug("已排课程：{} - {} - {} - {}", 
+                    course.getName(), course.getTeacherId(), course.getClassroomId(), course.getTime());
+                    
+                // 检查教师时间槽映射是否存在
+                Set<String> teacherSlots = teacherTimeSlots.get(course.getTeacherId());
+                if (teacherSlots != null) {
+                    teacherSlots.add(course.getTime());
+                }
+                
+                // 检查教室时间槽映射是否存在
+                Set<String> classroomSlots = classroomTimeSlots.get(course.getClassroomId());
+                if (classroomSlots != null) {
+                    classroomSlots.add(course.getTime());
+                }
+                
+                // 添加到全局已占用时间槽
+                occupiedTimeSlots.add(course.getTime());
+            }
         }
 
-        // 按照优先级对课程进行排序（按最大学生数降序）
-        courses.sort((c1, c2) -> {
+        // 打印初始化后的占用情况
+        logger.debug("初始化后教师时间槽占用情况：");
+        teacherTimeSlots.forEach((teacherId, slots) -> 
+            logger.debug("教师 {} 已占用时间槽: {}", teacherId, slots));
+            
+        logger.debug("初始化后教室时间槽占用情况：");
+        classroomTimeSlots.forEach((classroomId, slots) -> 
+            logger.debug("教室 {} 已占用时间槽: {}", classroomId, slots));
+            
+        logger.debug("初始化后全局已占用时间槽: {}", occupiedTimeSlots);
+
+        // 过滤出未排课的课程
+        List<CourseDTO> unscheduledCourses = courses.stream()
+            .filter(c -> c.getTime() == null)
+            .collect(Collectors.toList());
+        
+        logger.debug("未排课程数量：{}", unscheduledCourses.size());
+
+        // 按照优先级对未排课程进行排序（按最大学生数降序）
+        unscheduledCourses.sort((c1, c2) -> {
             if (c2.getMaxStudents() == null || c1.getMaxStudents() == null) {
                 logger.warn("课程最大学生数为空：{}, {}", 
                     c1.getName(), c2.getName());
@@ -79,7 +123,7 @@ public class CourseScheduler {
         }
 
         List<CourseDTO> scheduledCourses = new ArrayList<>();
-        for (CourseDTO course : courses) {
+        for (CourseDTO course : unscheduledCourses) {
             logger.debug("开始为课程 {} 安排时间和教室", course.getName());
             
             boolean scheduled = false;
@@ -93,6 +137,12 @@ public class CourseScheduler {
 
             // 遍历所有时间槽
             for (String timeSlot : TIME_SLOTS) {
+                // 检查该时间段是否已被占用
+                if (occupiedTimeSlots.contains(timeSlot)) {
+                    logger.debug("时间段 {} 已被其他课程占用", timeSlot);
+                    continue;
+                }
+
                 // 检查教师在这个时间段是否可用
                 if (teacherTimeSlots.get(teacherId) != null && 
                     teacherTimeSlots.get(teacherId).contains(timeSlot)) {
@@ -102,10 +152,15 @@ public class CourseScheduler {
 
                 // 寻找合适的教室
                 for (ClassroomDTO classroom : availableClassrooms) {
-                    // 检查教室容量和时间槽占用情况
-                    if (classroom.getCapacity() >= course.getMaxStudents() &&
-                        !classroomTimeSlots.get(classroom.getId()).contains(timeSlot)) {
-                        
+                    // 检查教室在该时间段是否已被占用
+                    Set<String> classroomSlots = classroomTimeSlots.get(classroom.getId());
+                    if (classroomSlots != null && classroomSlots.contains(timeSlot)) {
+                        logger.debug("教室 {} 在时间段 {} 已被占用", classroom.getName(), timeSlot);
+                        continue;
+                    }
+
+                    // 检查教室容量是否满足要求
+                    if (classroom.getCapacity() >= course.getMaxStudents()) {
                         logger.debug("找到合适的教室 {}，时间段 {}", 
                             classroom.getName(), timeSlot);
                         
@@ -119,17 +174,17 @@ public class CourseScheduler {
                         // 更新已占用时间槽
                         teacherTimeSlots.get(teacherId).add(timeSlot);
                         classroomTimeSlots.get(classroom.getId()).add(timeSlot);
+                        occupiedTimeSlots.add(timeSlot);
                         
                         scheduled = true;
                         scheduledCourses.add(course);
                         logger.debug("课程 {} 排课成功", course.getName());
                         break;
                     } else {
-                        logger.debug("教室 {} 不满足要求：容量={}, 所需容量={}, 时间段是否被占用={}", 
+                        logger.debug("教室 {} 容量不足：容量={}, 所需容量={}", 
                             classroom.getName(), 
                             classroom.getCapacity(), 
-                            course.getMaxStudents(),
-                            classroomTimeSlots.get(classroom.getId()).contains(timeSlot));
+                            course.getMaxStudents());
                     }
                 }
                 
