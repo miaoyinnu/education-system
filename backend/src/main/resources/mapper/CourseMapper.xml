@@ -144,7 +144,7 @@
         FROM course
         WHERE teacher_id = #{teacherId}
         AND semester = #{semester}
-        AND course_time = #{courseTime}
+        AND course_time = #{time}
         AND id != #{id}
     </select>
 
@@ -153,7 +153,7 @@
         FROM course
         WHERE classroom_id = #{classroomId}
         AND semester = #{semester}
-        AND course_time = #{courseTime}
+        AND course_time = #{time}
         AND id != #{id}
     </select>
 
@@ -165,24 +165,36 @@
         WHERE id = #{id}
     </update>
 
-    <!-- 查找未排课的课程 -->
-    <select id="findUnscheduledCourses" resultType="com.education.dto.CourseDTO">
-        SELECT
-        <include refid="Base_Column_List" />
-        FROM course c
-        LEFT JOIN teacher t ON c.teacher_id = t.id
-        LEFT JOIN classroom cl ON c.classroom_id = cl.id
-        WHERE c.course_time IS NULL
-    </select>
-
     <!-- 查找已排课的课程 -->
-    <select id="findScheduledCourses" resultType="com.education.dto.CourseDTO">
+    <select id="findScheduledCourses" resultMap="courseResultMap">
         SELECT
-        <include refid="Base_Column_List" />
+            c.id, c.name, 
+            c.teacher_id, t.name as teacher_name,
+            c.course_time,
+            c.classroom_id, cl.name as classroom_name,
+            c.max_students,
+            (SELECT COUNT(*) FROM course_selection cs WHERE cs.course_id = c.id) as current_students,
+            c.credit, c.semester
         FROM course c
         LEFT JOIN teacher t ON c.teacher_id = t.id
         LEFT JOIN classroom cl ON c.classroom_id = cl.id
         WHERE c.course_time IS NOT NULL
+    </select>
+
+    <!-- 查找未排课的课程 -->
+    <select id="findUnscheduledCourses" resultMap="courseResultMap">
+        SELECT
+            c.id, c.name, 
+            c.teacher_id, t.name as teacher_name,
+            c.course_time,
+            c.classroom_id, cl.name as classroom_name,
+            c.max_students,
+            (SELECT COUNT(*) FROM course_selection cs WHERE cs.course_id = c.id) as current_students,
+            c.credit, c.semester
+        FROM course c
+        LEFT JOIN teacher t ON c.teacher_id = t.id
+        LEFT JOIN classroom cl ON c.classroom_id = cl.id
+        WHERE c.course_time IS NULL
     </select>
 
     <!-- 统计相关 -->
@@ -224,7 +236,7 @@
     <sql id="Base_Column_List">
         c.id, c.name, 
         c.teacher_id, t.name as teacher_name,
-        c.course_time,
+        c.course_time as course_time,
         c.classroom_id, cl.name as classroom_name,
         c.max_students as maxStudents,
         c.current_students as currentStudents,
@@ -236,7 +248,7 @@
         SELECT
             c.id, c.name, 
             c.teacher_id, t.name as teacher_name,
-            c.course_time,
+            c.course_time as course_time,
             c.classroom_id, cl.name as classroom_name,
             c.max_students,
             (SELECT COUNT(*) FROM course_selection cs WHERE cs.course_id = c.id) as current_students,
@@ -274,12 +286,12 @@
         )
     </select>
 
-    <resultMap id="courseResultMap" type="com.education.entity.Course">
+    <resultMap id="courseResultMap" type="com.education.dto.CourseDTO">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="teacherId" column="teacher_id"/>
         <result property="teacherName" column="teacher_name"/>
-        <result property="courseTime" column="course_time"/>
+        <result property="time" column="course_time"/>
         <result property="timeSlotId" column="time_slot_id"/>
         <result property="classroomId" column="classroom_id"/>
         <result property="classroomName" column="classroom_name"/>

@@ -3,7 +3,7 @@
     <el-card class="schedule-card">
       <template #header>
         <div class="card-header">
-          <span>课程排课系统</span>
+          <span>课程排课</span>
           <div class="header-actions">
             <el-button type="primary" @click="handleAutoSchedule">自动排课</el-button>
             <el-button type="success" @click="handleManualSchedule">手动排课</el-button>
@@ -17,7 +17,7 @@
         <el-table :data="unscheduledCourses" stripe v-loading="loading">
           <el-table-column prop="name" label="课程名称" />
           <el-table-column prop="teacherName" label="任课教师" />
-          <el-table-column prop="maxStudents" label="课程容量" />
+          <el-table-column prop="maxStudents" label="最大人数" width="100" />
           <el-table-column label="操作" width="200">
             <template #default="{ row }">
               <el-button 
@@ -40,7 +40,7 @@
           <el-table-column prop="teacherName" label="任课教师" />
           <el-table-column prop="classroomName" label="教室" />
           <el-table-column prop="time" label="上课时间" />
-          <el-table-column prop="maxStudents" label="课程容量" />
+          <el-table-column prop="maxStudents" label="最大人数" width="100" />
           <el-table-column label="操作" width="200">
             <template #default="{ row }">
               <el-button 
@@ -223,8 +223,13 @@ const fetchUnscheduledCourses = async () => {
   try {
     loading.value = true
     const res = await request.get('/admin/courses/unscheduled')
+    console.log('未排课程数据详情:', res.data)
+    if (res.data && Array.isArray(res.data)) {
+      console.log('第一条未排课程数据:', res.data[0])
+    }
     unscheduledCourses.value = res.data
   } catch (error) {
+    console.error('获取未排课程失败:', error)
     ElMessage.error('获取未排课程失败')
   } finally {
     loading.value = false
@@ -236,8 +241,13 @@ const fetchScheduledCourses = async () => {
   try {
     loading.value = true
     const res = await request.get('/admin/courses/scheduled')
+    console.log('已排课程数据详情:', res.data)
+    if (res.data && Array.isArray(res.data)) {
+      console.log('第一条已排课程数据:', res.data[0])
+    }
     scheduledCourses.value = res.data
   } catch (error) {
+    console.error('获取已排课程失败:', error)
     ElMessage.error('获取已排课程失败')
   } finally {
     loading.value = false

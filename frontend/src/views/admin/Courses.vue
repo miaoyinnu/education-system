@@ -31,7 +31,7 @@
         <el-table-column prop="id" label="课程ID" width="80" />
         <el-table-column prop="name" label="课程名称" />
         <el-table-column prop="teacherName" label="任课教师" />
-        <el-table-column prop="courseTime" label="上课时间" />
+        <el-table-column prop="time" label="上课时间" />
         <el-table-column prop="classroomName" label="教室" />
         <el-table-column prop="maxStudents" label="最大人数" width="100" />
         <el-table-column prop="currentStudents" label="已选人数" width="100" />

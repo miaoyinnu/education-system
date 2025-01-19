@@ -450,11 +450,15 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public List<CourseDTO> getScheduledCourses() {
-        return courseMapper.findScheduledCourses();
+        List<CourseDTO> courses = courseMapper.findScheduledCourses();
+        System.out.println("已排课程数据: " + courses);
+        return courses;
     }
 
     @Override
     public List<CourseDTO> getUnscheduledCourses() {
-        return courseMapper.findUnscheduledCourses();
+        List<CourseDTO> courses = courseMapper.findUnscheduledCourses();
+        System.out.println("未排课程数据: " + courses);
+        return courses;
     }
 } 

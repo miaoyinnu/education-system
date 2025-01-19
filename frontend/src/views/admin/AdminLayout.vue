@@ -43,7 +43,7 @@
     <el-container>
       <el-header>
         <div class="header">
-          <h2>教务管理系统</h2>
+          <h2>高校课程管理系统</h2>
           <div class="user-info">
             <span>{{ userInfo?.username }}</span>
             <el-button type="text" @click="handleLogout">退出</el-button>
