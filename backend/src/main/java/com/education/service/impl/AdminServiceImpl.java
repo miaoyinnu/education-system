@@ -461,4 +461,25 @@ public class AdminServiceImpl implements AdminService {
         System.out.println("未排课程数据: " + courses);
         return courses;
     }
+
+    @Override
+    @Transactional
+    public void cancelSchedule(Long courseId) {
+        CourseDTO course = new CourseDTO();
+        course.setId(courseId);
+        course.setClassroomId(null);
+        course.setTimeSlotId(null);
+        course.setTime(null);
+        courseMapper.updateSchedule(course);
+    }
+
+    @Override
+    @Transactional
+    public void scheduleCourse(CourseDTO courseDTO) {
+        // 验证教室和时间槽是否可用
+        if (courseMapper.isTimeSlotOccupied(courseDTO.getTimeSlotId(), courseDTO.getClassroomId(), courseDTO.getId())) {
+            throw new IllegalStateException("该时间段的教室已被占用");
+        }
+        courseMapper.updateSchedule(courseDTO);
+    }
 } 

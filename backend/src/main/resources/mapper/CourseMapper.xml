@@ -181,6 +181,15 @@
         WHERE c.course_time IS NOT NULL
     </select>
 
+    <!-- 检查时间槽是否被占用 -->
+    <select id="isTimeSlotOccupied" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM course
+        WHERE time_slot_id = #{timeSlotId}
+        AND classroom_id = #{classroomId}
+        AND id != #{courseId}
+    </select>
+
     <!-- 查找未排课的课程 -->
     <select id="findUnscheduledCourses" resultMap="courseResultMap">
         SELECT

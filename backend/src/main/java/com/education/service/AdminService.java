@@ -27,6 +27,8 @@ public interface AdminService {
 
     // 自动排课
     List<CourseDTO> autoScheduleCourses();
+    void cancelSchedule(Long courseId);
+    void scheduleCourse(CourseDTO courseDTO);
 
     // 系统设置
     SystemSettingsDTO updateSettings(SystemSettingsDTO settingsDTO);

@@ -44,6 +44,18 @@ public class AdminController {
         return Result.success();
     }
 
+    @PostMapping("/courses/{id}/cancel-schedule")
+    public Result<Void> cancelSchedule(@PathVariable Long id) {
+        adminService.cancelSchedule(id);
+        return Result.success();
+    }
+
+    @PostMapping("/courses/schedule")
+    public Result<Void> scheduleCourse(@RequestBody CourseDTO courseDTO) {
+        adminService.scheduleCourse(courseDTO);
+        return Result.success();
+    }
+
     // 教师管理
     @GetMapping("/teachers")
     public Result<List<TeacherDTO>> getTeachers() {

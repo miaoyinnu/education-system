@@ -35,6 +35,7 @@ public interface CourseMapper {
     void updateSchedule(CourseDTO course);
     List<CourseDTO> findUnscheduledCourses();
     List<CourseDTO> findScheduledCourses();
+    boolean isTimeSlotOccupied(@Param("timeSlotId") Long timeSlotId, @Param("classroomId") Long classroomId, @Param("courseId") Long courseId);
 
     // 统计相关
     int countTotal();
