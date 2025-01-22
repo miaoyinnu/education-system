@@ -52,18 +52,7 @@ public class StudentService {
             throw new BusinessException("学生信息不存在");
         }
         
-        List<Course> courses = courseMapper.findByStudentId(studentId);
-        
-        return courses.stream().map(course -> {
-            CourseDTO dto = new CourseDTO();
-            dto.setId(course.getId());
-            dto.setName(course.getName());
-            dto.setTeacher(teacherMapper.findNameById(course.getTeacherId()));
-            dto.setTime(course.getCourseTime());
-            dto.setLocation(course.getClassroomName());
-            dto.setSemester(course.getSemester());
-            return dto;
-        }).collect(Collectors.toList());
+        return courseMapper.findByStudentId(studentId);
     }
     
     public List<CourseDTO> getAvailableCourses(String search) {
@@ -73,25 +62,7 @@ public class StudentService {
             throw new BusinessException("学生信息不存在");
         }
         
-        List<Course> courses = courseMapper.findAvailableCourses(studentId, search);
-        
-        return courses.stream().map(course -> {
-            CourseDTO dto = new CourseDTO();
-            dto.setId(course.getId());
-            dto.setName(course.getName());
-            dto.setTeacher(teacherMapper.findNameById(course.getTeacherId()));
-            dto.setTime(course.getCourseTime());
-            dto.setLocation(course.getClassroomName());
-            dto.setSemester(course.getSemester());
-            int maxStudents = course.getMaxStudents() != null ? course.getMaxStudents() : 0;
-            int currentStudents = course.getCurrentStudents() != null ? course.getCurrentStudents() : 0;
-            dto.setCurrentStudents(currentStudents);
-            dto.setMaxStudents(maxStudents);
-            dto.setCapacity(maxStudents - currentStudents);
-            dto.setCredit(course.getCredit());
-            dto.setSelected(false);
-            return dto;
-        }).collect(Collectors.toList());
+        return courseMapper.findAvailableCourses(studentId, search);
     }
     
     @Transactional
@@ -102,7 +73,7 @@ public class StudentService {
             throw new BusinessException("学生信息不存在");
         }
         
-        Course course = courseMapper.findById(courseId);
+        CourseDTO course = courseMapper.findCourseById(courseId);
         if (course == null) {
             throw new BusinessException("课程不存在");
         }
@@ -130,7 +101,7 @@ public class StudentService {
         StudentStatsDTO stats = new StudentStatsDTO();
         
         // 获取总课程数
-        List<Course> courses = courseMapper.findByStudentId(studentId);
+        List<CourseDTO> courses = courseMapper.findByStudentId(studentId);
         stats.setTotalCourses(courses.size());
         
         // 获取成绩信息
@@ -138,18 +109,20 @@ public class StudentService {
         
         // 计算总学分
         double totalCredits = grades.stream()
+            .filter(grade -> grade.getScore() != null)  // 只计算有成绩的课程的学分
             .map(GradeDTO::getCredit)
             .filter(credit -> credit != null)
             .mapToDouble(Integer::doubleValue)
             .sum();
         stats.setTotalCredits((int) totalCredits);
         
-        // 计算平均成绩
-        double averageScore = grades.stream()
-            .filter(grade -> grade.getScore() != null)
-            .mapToDouble(GradeDTO::getScore)
-            .average()
-            .orElse(0.0);
+        // 计算加权平均成绩
+        double weightedScoreSum = grades.stream()
+            .filter(grade -> grade.getScore() != null && grade.getCredit() != null)
+            .mapToDouble(grade -> grade.getScore() * grade.getCredit())
+            .sum();
+            
+        double averageScore = totalCredits > 0 ? weightedScoreSum / totalCredits : 0.0;
         stats.setAverageScore(averageScore);
         
         return stats;

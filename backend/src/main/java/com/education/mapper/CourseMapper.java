@@ -12,14 +12,15 @@ public interface CourseMapper {
     // 基础CRUD
     List<CourseDTO> findAll();
     Course findById(Long id);
+    CourseDTO findCourseById(Long id);
     void insert(CourseDTO course);
     void update(CourseDTO course);
     void delete(Long id);
     
     // 学生相关
     List<String> findAllSemesters();
-    List<Course> findByStudentId(Long studentId);
-    List<Course> findAvailableCourses(@Param("studentId") Long studentId, @Param("search") String search);
+    List<CourseDTO> findByStudentId(Long studentId);
+    List<CourseDTO> findAvailableCourses(@Param("studentId") Long studentId, @Param("search") String search);
     boolean isStudentSelected(@Param("studentId") Long studentId, @Param("courseId") Long courseId);
     void insertCourseSelection(@Param("studentId") Long studentId, @Param("courseId") Long courseId);
     void incrementCurrentStudents(Long courseId);

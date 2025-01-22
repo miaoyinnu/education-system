@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.education.mapper.SystemLogMapper">
+    
+    <select id="getSystemLogs" resultType="com.education.entity.SystemLog">
+        SELECT * FROM system_log
+        <where>
+            <if test="type != null and type != ''">
+                AND type = #{type}
+            </if>
+            <if test="date != null">
+                AND DATE(timestamp) = #{date}
+            </if>
+        </where>
+        ORDER BY timestamp DESC
+    </select>
+    
+    <insert id="insertLog" parameterType="com.education.entity.SystemLog">
+        INSERT INTO system_log (timestamp, type, user, action, ip)
+        VALUES (#{timestamp}, #{type}, #{user}, #{action}, #{ip})
+    </insert>
+    
+</mapper> 

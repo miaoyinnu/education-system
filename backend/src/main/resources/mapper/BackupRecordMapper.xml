@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.education.mapper.BackupRecordMapper">
+    
+    <select id="getBackupHistory" resultType="com.education.entity.BackupRecord">
+        SELECT * FROM backup_record ORDER BY backup_time DESC
+    </select>
+    
+    <select id="getBackupById" resultType="com.education.entity.BackupRecord">
+        SELECT * FROM backup_record WHERE id = #{id}
+    </select>
+    
+    <insert id="insertBackupRecord" parameterType="com.education.entity.BackupRecord">
+        INSERT INTO backup_record (backup_time, file_name, file_size, status, file_path, description)
+        VALUES (#{backupTime}, #{fileName}, #{fileSize}, #{status}, #{filePath}, #{description})
+    </insert>
+    
+</mapper> 

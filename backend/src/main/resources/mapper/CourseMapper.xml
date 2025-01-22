@@ -18,6 +18,25 @@
         WHERE c.id = #{id}
     </select>
 
+    <select id="findCourseById" resultType="com.education.dto.CourseDTO">
+        SELECT 
+            c.id as id,
+            c.name as name,
+            c.teacher_id as teacherId,
+            t.name as teacher,
+            c.course_time as time,
+            c.classroom_id as classroomId,
+            cr.name as location,
+            c.max_students as maxStudents,
+            c.current_students as currentStudents,
+            c.credit as credit,
+            c.semester as semester
+        FROM course c
+        LEFT JOIN teacher t ON c.teacher_id = t.id
+        LEFT JOIN classroom cr ON c.classroom_id = cr.id
+        WHERE c.id = #{id}
+    </select>
+
     <insert id="insert" parameterType="com.education.dto.CourseDTO">
         INSERT INTO course (
             name, 
@@ -60,15 +79,18 @@
         SELECT DISTINCT semester FROM course ORDER BY semester DESC
     </select>
 
-    <select id="findByStudentId" resultMap="courseResultMap">
+    <select id="findByStudentId" resultType="com.education.dto.CourseDTO">
         SELECT 
-            c.id, c.name, 
-            c.teacher_id, t.name as teacher_name,
-            c.course_time,
-            c.classroom_id, cl.name as classroom_name,
-            c.max_students,
-            c.current_students,
-            c.credit, c.semester
+            c.id as id,
+            c.name as name,
+            t.name as teacher,
+            c.course_time as time,
+            cl.name as location,
+            c.semester as semester,
+            c.credit as credit,
+            c.max_students as maxStudents,
+            c.current_students as currentStudents,
+            (c.max_students - c.current_students) as capacity
         FROM course c
         JOIN course_selection cs ON c.id = cs.course_id
         LEFT JOIN teacher t ON c.teacher_id = t.id
@@ -76,14 +98,18 @@
         WHERE cs.student_id = #{studentId}
     </select>
 
-    <select id="findAvailableCourses" resultMap="courseResultMap">
+    <select id="findAvailableCourses" resultType="com.education.dto.CourseDTO">
         SELECT 
-            c.id, c.name, c.course_time, c.semester,
-            c.max_students, 
-            COUNT(DISTINCT cs.student_id) as current_students,
-            c.teacher_id, c.classroom_id, c.credit,
-            t.name as teacher_name,
-            cr.name as classroom_name
+            c.id as id,
+            c.name as name,
+            t.name as teacher,
+            c.course_time as time,
+            cr.name as location,
+            c.semester as semester,
+            c.max_students as maxStudents,
+            COUNT(DISTINCT cs.student_id) as currentStudents,
+            c.credit as credit,
+            (c.max_students - COUNT(DISTINCT cs.student_id)) as capacity
         FROM course c
         LEFT JOIN teacher t ON c.teacher_id = t.id
         LEFT JOIN classroom cr ON c.classroom_id = cr.id
@@ -96,8 +122,7 @@
         </if>
         GROUP BY 
             c.id, c.name, c.course_time, c.semester,
-            c.max_students, c.teacher_id, c.classroom_id, c.credit,
-            t.name, cr.name
+            c.max_students, t.name, cr.name, c.credit
     </select>
 
     <select id="isStudentSelected" resultType="boolean">

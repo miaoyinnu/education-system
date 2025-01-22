@@ -29,11 +29,7 @@
         </el-table>
       </div>
 
-      <!-- 成绩分布 -->
-      <div class="section">
-        <h3>成绩分布</h3>
-        <div class="chart-container" ref="gradeDistributionChart"></div>
-      </div>
+ 
 
       <!-- 成绩异常提醒 -->
       <div class="section">
@@ -63,17 +59,7 @@
             </template>
           </el-table-column>
           <el-table-column prop="teacher_name" label="任课教师" />
-          <el-table-column label="操作">
-            <template #default="{ row }">
-              <el-button 
-                type="primary" 
-                link 
-                @click="handleNotify(row)"
-              >
-                发送提醒
-              </el-button>
-            </template>
-          </el-table-column>
+
         </el-table>
       </div>
 
