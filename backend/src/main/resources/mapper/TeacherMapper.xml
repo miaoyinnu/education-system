@@ -11,11 +11,17 @@
             cl.name as classroomName,
             c.max_students as maxStudents,
             c.current_students as currentStudents,
-            c.credit
+            c.credit,
+            ROUND(
+                SUM(CASE WHEN g.is_published = true THEN g.score ELSE NULL END) * 1.0 / 
+                COUNT(CASE WHEN g.is_published = true AND g.score IS NOT NULL THEN 1 ELSE NULL END)
+            , 2) as averageScore
         FROM course c
         JOIN teacher t ON c.teacher_id = t.id
         LEFT JOIN classroom cl ON c.classroom_id = cl.id
+        LEFT JOIN grade g ON c.id = g.course_id
         WHERE t.user_id = #{teacherId}
+        GROUP BY c.id, c.name, c.semester, c.course_time, cl.name, c.max_students, c.current_students, c.credit
     </select>
 
     <select id="findByPage" resultType="com.education.entity.Teacher">

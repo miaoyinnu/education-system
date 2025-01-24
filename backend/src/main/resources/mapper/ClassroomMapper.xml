@@ -91,13 +91,14 @@
         SELECT 
             cl.id as classroomId,
             cl.name as classroomName,
+            cl.capacity as totalCapacity,
             COUNT(c.id) as totalCourses,
             COUNT(DISTINCT c.course_time) as usedTimeSlots,
             (COUNT(DISTINCT c.course_time) * 100.0 / 
                 (SELECT COUNT(DISTINCT course_time) FROM course)) as usageRate
         FROM classroom cl
         LEFT JOIN course c ON cl.id = c.classroom_id
-        GROUP BY cl.id, cl.name
+        GROUP BY cl.id, cl.name, cl.capacity
     </select>
 
     <select id="getCapacityStatistics" resultType="java.util.Map">

@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard">
     <el-row :gutter="20">
-      <el-col :span="8">
+      <el-col :span="12">
         <el-card class="box-card">
           <template #header>
             <div class="card-header">
@@ -13,7 +13,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="8">
+      <el-col :span="12">
         <el-card class="box-card">
           <template #header>
             <div class="card-header">
@@ -25,18 +25,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="8">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header">
-              <span>平均成绩</span>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="number">{{ (stats?.averageScore || 0).toFixed(1) }}</span>
-          </div>
-        </el-card>
-      </el-col>
+
     </el-row>
 
     <!-- 成绩预警表格 -->

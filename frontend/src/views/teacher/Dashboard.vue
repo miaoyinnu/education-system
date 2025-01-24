@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard">
     <el-row :gutter="20">
-      <el-col :span="8">
+      <el-col :span="12">
         <el-card class="box-card">
           <template #header>
             <div class="card-header">
@@ -13,7 +13,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="8">
+      <el-col :span="12">
         <el-card class="box-card">
           <template #header>
             <div class="card-header">
@@ -25,18 +25,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="8">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header">
-              <span>平均分数</span>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="number">{{ stats.averageScore.toFixed(1) }}</span>
-          </div>
-        </el-card>
-      </el-col>
+
     </el-row>
 
     <el-card class="course-list" style="margin-top: 20px;">
@@ -52,6 +41,11 @@
         <el-table-column prop="classroomName" label="上课地点" />
         <el-table-column prop="currentStudents" label="已选人数" />
         <el-table-column prop="maxStudents" label="最大人数" />
+                <el-table-column prop="averageScore" label="平均成绩">
+          <template #default="{ row }">
+            {{ row.averageScore ? row.averageScore.toFixed(2) : '-' }}
+          </template>
+        </el-table-column>
         <el-table-column label="操作" width="120">
           <template #default="{ row }">
             <el-button type="primary" size="small" @click="handleGrades(row)">成绩管理</el-button>

@@ -92,6 +92,7 @@
         <h3>教室使用率</h3>
         <el-table :data="usageStats" style="width: 100%" v-loading="loading">
           <el-table-column prop="classroomName" label="教室" />
+          <el-table-column prop="totalCapacity" label="总容量" />
           <el-table-column prop="totalCourses" label="课程数" />
           <el-table-column prop="usedTimeSlots" label="已用时段" />
           <el-table-column prop="usageRate" label="使用率">
@@ -102,25 +103,7 @@
         </el-table>
       </div>
 
-      <!-- 教室容量利用率 -->
-      <div class="section">
-        <h3>教室容量利用率</h3>
-        <el-table :data="capacityStats" style="width: 100%" v-loading="loading">
-          <el-table-column prop="classroomName" label="教室" />
-          <el-table-column prop="totalCapacity" label="总容量" />
-          <el-table-column prop="avgStudents" label="平均人数">
-            <template #default="{ row }">
-              {{ row.avgStudents?.toFixed(2) || '-' }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="maxStudents" label="最大人数" />
-          <el-table-column prop="utilizationRate" label="利用率">
-            <template #default="{ row }">
-              {{ row.utilizationRate?.toFixed(2) || '-' }}%
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
+
     </el-card>
   </div>
 </template>

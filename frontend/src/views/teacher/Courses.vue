@@ -14,6 +14,11 @@
         <el-table-column prop="classroomName" label="上课地点" />
         <el-table-column prop="currentStudents" label="已选人数" />
         <el-table-column prop="maxStudents" label="最大人数" />
+        <el-table-column prop="averageScore" label="平均成绩">
+          <template #default="{ row }">
+            {{ row.averageScore ? row.averageScore.toFixed(2) : '-' }}
+          </template>
+        </el-table-column>
         <el-table-column label="操作" width="120">
           <template #default="{ row }">
             <el-button type="primary" size="small" @click="handleGrades(row)">成绩管理</el-button>

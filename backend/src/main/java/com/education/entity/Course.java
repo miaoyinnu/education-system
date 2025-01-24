@@ -16,4 +16,5 @@ public class Course {
     private Integer maxStudents;  // 最大学生数
     private Integer currentStudents;  // 当前学生数
     private Double credit;  // 学分
+    private Double averageScore;  // 平均成绩
 } 

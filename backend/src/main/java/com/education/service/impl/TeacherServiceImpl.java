@@ -208,15 +208,15 @@ public class TeacherServiceImpl implements TeacherService {
             if (count != null && count > 0) {
                 // 如果存在记录，则更新
                 jdbcTemplate.update(
-                    "UPDATE grade SET score = ?, created_at = NOW() " +
+                    "UPDATE grade SET score = ?, created_at = NOW(), is_published = true " +
                     "WHERE course_id = ? AND student_id = ?",
                     grade.getScore(), courseId, grade.getStudentId()
                 );
             } else {
                 // 如果不存在记录，则插入
                 jdbcTemplate.update(
-                    "INSERT INTO grade (course_id, student_id, score, created_at) " +
-                    "VALUES (?, ?, ?, NOW())",
+                    "INSERT INTO grade (course_id, student_id, score, created_at, is_published) " +
+                    "VALUES (?, ?, ?, NOW(), true)",
                     courseId, grade.getStudentId(), grade.getScore()
                 );
             }
